@@ -72,3 +72,5 @@ Plugins/**/Intermediate/*
 
 # Cache files for the editor to use
 DerivedDataCache/*
+Content/AgeofWar/Sounds/TavernMusic.uasset
+Content/Stylized_PBR_Nature/Maps/Stylized_Nature_ExampleScene.umap
