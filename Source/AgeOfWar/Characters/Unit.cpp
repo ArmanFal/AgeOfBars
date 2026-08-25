@@ -25,6 +25,17 @@ AUnit::AUnit()
 void AUnit::BeginPlay()
 {
 	Super::BeginPlay();
+	ObjectPool->OnOwnerPooled.AddDynamic(this, &AUnit::HandlePoolStatus);
+}
+
+void AUnit::HandlePoolStatus(bool IsInUse)
+{
+	if (IsInUse)
+	{
+		MinimalMovement->BeginMovement();
+		return;	
+	}
+	MinimalMovement->StopMovement();
 }
 
 // Called every frame

@@ -6,8 +6,9 @@
 #include "Components/ActorComponent.h"
 #include "ObjectPool.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOwnerPooled, bool, Status);
 
-UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
+UCLASS()
 class AGEOFWAR_API UObjectPool : public UActorComponent
 {
 	GENERATED_BODY()
@@ -16,6 +17,14 @@ public:
 	// Sets default values for this component's properties
 	UObjectPool();
 
+	bool bIsInUse{false};
+	
+	bool AcquireFromPool();
+	bool ReleaseIntoPool();
+	
+	UPROPERTY(BlueprintAssignable)
+	FOwnerPooled OnOwnerPooled;
+	
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;

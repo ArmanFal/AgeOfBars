@@ -21,10 +21,15 @@ class AGEOFWAR_API AUnit : public APawn
 public:
 	// Sets default values for this pawn's properties
 	AUnit();
+	
+	UObjectPool* GetObjectPool() { return ObjectPool; };
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	
+	UFUNCTION()
+	void HandlePoolStatus(bool IsInUse);
 	
 	// Don't really need to add the AllowPrivateAccess but wouldn't wanna forget it in case we make the scope private
 	// This section is for a variety of component which encapsulate the behaviour of the character
@@ -58,7 +63,6 @@ protected:
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta=(AllowPrivateAccess="true"))
 	TObjectPtr<USceneComponent> Root;
-	
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta=(AllowPrivateAccess="true"))
 	int32 TeamAffiliationIndex{0};

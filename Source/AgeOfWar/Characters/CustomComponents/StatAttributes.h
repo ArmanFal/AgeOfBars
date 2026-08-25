@@ -8,6 +8,8 @@
 #include "StatAttributes.generated.h"
 
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDeath);
+
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class AGEOFWAR_API UStatAttributes : public UActorComponent
 {
@@ -27,6 +29,11 @@ public:
 	
 	UFUNCTION(BlueprintCallable)
 	void InitializeAttributes();
+	
+	UFUNCTION(BlueprintCallable)
+	void HandleDeath();
+	
+	FOnDeath OnDeath;
 	
 protected:
 	// Called when the game starts

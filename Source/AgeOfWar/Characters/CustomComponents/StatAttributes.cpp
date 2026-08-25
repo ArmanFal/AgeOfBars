@@ -30,3 +30,8 @@ void UStatAttributes::TickComponent(float DeltaTime, ELevelTick TickType, FActor
 	// ...
 }
 
+void UStatAttributes::HandleDeath()
+{
+	OnDeath.Broadcast();
+}
+
