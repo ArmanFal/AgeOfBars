@@ -6,7 +6,7 @@
 #include "Components/ActorComponent.h"
 #include "ObjectPool.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOwnerPooled, bool, Status);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOwnerPooled, bool, Status, UObject*, Instigator);
 
 UCLASS()
 class AGEOFWAR_API UObjectPool : public UActorComponent
@@ -19,8 +19,8 @@ public:
 
 	bool bIsInUse{false};
 	
-	bool AcquireFromPool();
-	bool ReleaseIntoPool();
+	bool AcquireFromPool(UObject* Instigator);
+	bool ReleaseIntoPool(UObject* Instigator);
 	
 	UPROPERTY(BlueprintAssignable)
 	FOwnerPooled OnOwnerPooled;

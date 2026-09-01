@@ -10,7 +10,7 @@
 /**
  * 
  */
-UCLASS(Abstract, Blueprintable)
+UCLASS(Abstract, BlueprintType, Blueprintable)
 class AGEOFWAR_API UAbility : public UObject
 {
 	GENERATED_BODY()
@@ -20,10 +20,14 @@ public:
 	UAbility();
 	
 	UPROPERTY()
-	TObjectPtr<AUnit> AbilityOwner;
+	AUnit* AbilityOwner;
 	
-	void ActivateAbility();
+	void ActivateAbility(AUnit* Owner);
 	void StopAbility();
+	
+	void DeInitialize();
+	
+	virtual class UWorld* GetWorld() const override;
 	
 protected:
 	
@@ -31,7 +35,10 @@ protected:
 	void OnActivated();
 	
 	UFUNCTION(BlueprintImplementableEvent, Category = "Ability")
-	void OnDeactivated();
+	bool OnDeactivated();
+	
+	UFUNCTION(BlueprintCallable, Category = "Ability")
+	void FinishAbility();
 	
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Ability")
 	AUnit* GetAbilityOwner() const {return AbilityOwner; };

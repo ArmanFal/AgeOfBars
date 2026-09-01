@@ -3,15 +3,17 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "ObjectPoolHandlerInterface.h"
 #include "UObject/Object.h"
 #include "UnitLane.h"
+#include "Characters/Data/UUnitData.h"
 #include "Components/BillboardComponent.h"
 #include "LaneManager.generated.h"
 
 class AUnit;
 
 UCLASS()
-class AGEOFWAR_API ALaneManager : public AActor
+class AGEOFWAR_API ALaneManager : public AActor, public IObjectPoolHandlerInterface
 {
 	GENERATED_BODY()
 	
@@ -38,10 +40,21 @@ public:
 	TArray<TObjectPtr<AUnit>> SpawnedUnits;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Poolable Units")
+	TSubclassOf<AUnit> PooledUnitClass;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Poolable Units")
 	EUnitLane UnitLane;
 	
 	UFUNCTION(BlueprintCallable)
-	bool SpawnUnitOfTypeOnLane();
+	AUnit* SpawnUnitOfTypeOnLane(UUnitData* UnitData);
+	
+	UFUNCTION(BlueprintCallable)
+	void ReOrderSpawnedUnitsIndex(int FromIndex, int ToIndex, int Change);
+	
+	virtual bool RequestReturnToPool_Implementation(AUnit* RequestingUnit) override;
+	// virtual bool RequestReleaseFromPool_Implementation(AUnit* RequestingUnit) override;
+	
+	void HandleUnitPool(AUnit* PooledUnit);
 	
 	virtual void BeginPlay() override;
 };

@@ -4,8 +4,6 @@
 #include "ObjectPool.h"
 
 
-
-
 // Sets default values for this component's properties
 UObjectPool::UObjectPool()
 {
@@ -33,23 +31,23 @@ void UObjectPool::TickComponent(float DeltaTime, ELevelTick TickType, FActorComp
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
-bool UObjectPool::AcquireFromPool()
+bool UObjectPool::AcquireFromPool(UObject* Instigator)
 {
 	bIsInUse = true;
 	GetOwner()->SetActorHiddenInGame(false);
 	GetOwner()->SetActorEnableCollision(true);
 	GetOwner()->SetActorTickEnabled(true);
-	OnOwnerPooled.Broadcast(bIsInUse);
+	OnOwnerPooled.Broadcast(bIsInUse, Instigator);
 	return bIsInUse;
 }
 
-bool UObjectPool::ReleaseIntoPool()
+bool UObjectPool::ReleaseIntoPool(UObject* Instigator)
 {
 	bIsInUse = false;
 	GetOwner()->SetActorHiddenInGame(true);
 	GetOwner()->SetActorEnableCollision(false);
 	GetOwner()->SetActorTickEnabled(false);
-	OnOwnerPooled.Broadcast(bIsInUse);
+	OnOwnerPooled.Broadcast(bIsInUse, Instigator);
 	return bIsInUse;
 }
 

@@ -15,29 +15,43 @@ ALaneManager::ALaneManager()
 	
 }
 
-AUnit* ALaneManager::SpawnUnitOfTypeOnLane()
+AUnit* ALaneManager::SpawnUnitOfTypeOnLane(UUnitData* UnitData)
 {
 	if (PooledUnits.IsEmpty())
 	{
-		return false;
+		return nullptr;
 	}
-	TObjectPtr<AUnit> Unit = PooledUnits.Pop(false);
-	
-	if (Unit->GetObjectPool()->AcquireFromPool())
+	TObjectPtr<AUnit> Unit = PooledUnits.Pop(EAllowShrinking::No);
+	if (!Unit)
 	{
-		Unit->SetActorTransform(SpawnTransform);
-		SpawnedUnits.Add(Unit);
-		return true;
+		return nullptr;
 	}
-	return false;
+	if (Unit->GetObjectPool()->AcquireFromPool(this))
+	{
+		// Make this into a delegate inside the UNIT
+		if (Unit->ApplyDataToUnit(UnitData))
+		{
+			Unit->SetActorLocation(SpawnTransform.GetLocation());
+			Unit->SetActorRotation(SpawnTransform.GetRotation());
+			SpawnedUnits.Add(Unit);
+			return Unit;
+		}
+	}
+	return nullptr;
 }
 
 void ALaneManager::BeginPlay()
 {
 	Super::BeginPlay();
+	
+	if (!PooledUnitClass)
+	{
+		return;
+	}
+	
 	for (int i = 0; i < UnitsToPool; i++)
 	{
-		AUnit* Unit = GetWorld()->SpawnActor<AUnit>( AUnit::StaticClass(), 
+		AUnit* Unit = GetWorld()->SpawnActor<AUnit>( PooledUnitClass, 
 			FVector::ZeroVector,
 			FRotator::ZeroRotator);
 		
@@ -52,9 +66,30 @@ void ALaneManager::BeginPlay()
 			UE_LOG(LogTemp, Error, TEXT("No UObjectPool found When Spawning Units as LaneManager"));
 			break;
 		}
-		ObjectPool->ReleaseIntoPool();
+		ObjectPool->ReleaseIntoPool(this);
 		PooledUnits.Add(Unit);
 	}
 		
 	SpawnTransform = BillboardSpawnLocation->GetComponentTransform();
+}
+
+bool ALaneManager::RequestReturnToPool_Implementation(AUnit* RequestSource)
+{
+	if (!IsValid(RequestSource))
+	{
+		return false;
+	}
+	RequestSource->GetObjectPool()->ReleaseIntoPool(RequestSource);
+	HandleUnitPool(RequestSource);
+	return true;
+}
+
+void ALaneManager::HandleUnitPool(AUnit* PooledUnit)
+{
+	PooledUnits.Add(PooledUnit);
+}
+
+void ALaneManager::ReOrderSpawnedUnitsIndex(int FromIndex, int ToIndex, int Change)
+{
+	// 
 }

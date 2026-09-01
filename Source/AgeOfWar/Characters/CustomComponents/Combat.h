@@ -6,7 +6,8 @@
 #include "Components/ActorComponent.h"
 #include "Combat.generated.h"
 
-class UStatAttributes;
+class UAttributesComponent;
+class UAbility;
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class AGEOFWAR_API UCombat : public UActorComponent
@@ -17,13 +18,19 @@ public:
 	// Sets default values for this component's properties
 	UCombat();
 
+	UFUNCTION(BlueprintCallable, Category = "Components|Combat")
 	bool PerformAbility();
 	
-	float CalcValuePerHitInstanceOfAbility(UStatAttributes* Stats);
+	bool AssignAbility(TSubclassOf<UAbility> Ability);
+	
+	float CalcValuePerHitInstanceOfAbility(UAttributesComponent* Stats);
 	
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
+	
+	UPROPERTY()
+	UAbility* UnitAbility = nullptr;
 
 public:
 	// Called every frame

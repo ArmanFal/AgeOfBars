@@ -8,12 +8,33 @@ UAbility::UAbility()
 	
 }
 
-void UAbility::ActivateAbility() 
+void UAbility::DeInitialize()
 {
+	this->MarkAsGarbage();
+}
+
+void UAbility::ActivateAbility(AUnit* Owner) 
+{
+	AbilityOwner = Owner;
 	OnActivated();
+}
+
+void UAbility::FinishAbility()
+{
+	// finish ability
 }
 
 void UAbility::StopAbility()
 {
 	OnDeactivated();
+}
+
+UWorld* UAbility::GetWorld() const
+{
+	if (AActor* Owner = GetTypedOuter<AActor>())
+	{
+		return Owner->GetWorld();
+	}
+	Super::GetWorld();
+	return nullptr;
 }

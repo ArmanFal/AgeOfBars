@@ -5,10 +5,12 @@
 #include "CoreMinimal.h"
 #include "CustomComponents/Combat.h"
 #include "CustomComponents/MinimalMovement.h"
-#include "CustomComponents/StatAttributes.h"
+#include "Data/UUnitData.h"
+#include "CustomComponents/AttributesComponent.h"
 #include "CustomComponents/ObjectPool.h"
 #include "Components/BoxComponent.h"
 #include "Components/WidgetComponent.h"
+#include "Components/WidgetInteractionComponent.h"
 #include "GameFramework/Pawn.h"
 #include "Unit.generated.h"
 
@@ -22,14 +24,25 @@ public:
 	// Sets default values for this pawn's properties
 	AUnit();
 	
+	UPROPERTY(BlueprintReadWrite)
+	bool bAutomaticallyHandlePoolAfterDeath{true};
+	
 	UObjectPool* GetObjectPool() { return ObjectPool; };
 
+	bool ApplyDataToUnit(const UUnitData* Data);
+	
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	
 	UFUNCTION()
-	void HandlePoolStatus(bool IsInUse);
+	void HandlePoolStatus(bool IsInUse, UObject* PoolInstigator);
+	
+	UFUNCTION()
+	void HandleDeath();
+	
+	UFUNCTION()
+	bool DetectForward();
 	
 	// Don't really need to add the AllowPrivateAccess but wouldn't wanna forget it in case we make the scope private
 	// This section is for a variety of component which encapsulate the behaviour of the character
@@ -44,7 +57,7 @@ protected:
 	
 	//Attributes such as Health and Damage are stored in this component
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta=(AllowPrivateAccess="true"))
-	TObjectPtr<UStatAttributes> Attributes;
+	TObjectPtr<UAttributesComponent> AttributeComponent;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta=(AllowPrivateAccess="true"))
 	TObjectPtr<UObjectPool> ObjectPool;
@@ -62,6 +75,9 @@ protected:
 	TObjectPtr<UWidgetComponent> AbilityWidget;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta=(AllowPrivateAccess="true"))
+	TObjectPtr<UWidgetInteractionComponent> InteractionWidget;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta=(AllowPrivateAccess="true"))
 	TObjectPtr<USceneComponent> Root;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta=(AllowPrivateAccess="true"))
@@ -73,11 +89,21 @@ protected:
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta=(AllowPrivateAccess="true"))
 	int32 LaneIndex{0};
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta=(AllowPrivateAccess="true"))
+	UUnitData* UnitData;
 
 public:
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta=(AllowPrivateAccess="true"))
+	FGameplayTag UnitTag;
+	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	
+private:
+	void UpdateUnitTag(FGameplayTag Tag);
 };

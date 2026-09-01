@@ -2,16 +2,38 @@
 
 
 #include "Combat.h"
+#include "Characters/Ability.h"
 
+
+bool UCombat::PerformAbility()
+{
+	if (UnitAbility)
+	{
+		UnitAbility->ActivateAbility(StaticCast<AUnit*>(GetOwner()));
+		return true;
+	}
+	return false;
+}
+
+bool UCombat::AssignAbility(TSubclassOf<UAbility> Ability)
+{
+	if (UnitAbility)
+	{
+		UnitAbility->DeInitialize();
+		UnitAbility = nullptr;
+	}
+	if (!IsValid(Ability))
+	{
+		return false;
+	}
+	UnitAbility = NewObject<UAbility>(this, Ability);
+	return IsValid(UnitAbility);
+}
 
 // Sets default values for this component's properties
 UCombat::UCombat()
 {
-	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
-	// off to improve performance if you don't need them.
-	PrimaryComponentTick.bCanEverTick = false;
 
-	// ...
 }
 
 
@@ -19,9 +41,6 @@ UCombat::UCombat()
 void UCombat::BeginPlay()
 {
 	Super::BeginPlay();
-
-	// ...
-	
 }
 
 
@@ -29,7 +48,5 @@ void UCombat::BeginPlay()
 void UCombat::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	// ...
 }
 
