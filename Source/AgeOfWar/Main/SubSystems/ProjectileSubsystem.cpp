@@ -3,9 +3,12 @@
 
 #include "ProjectileSubsystem.h"
 
-void UProjectileSubsystem::Initialize(FSubsystemCollectionBase& Collection)
+void UProjectileSubsystem::InitializeProjectileData()
 {
-	Super::Initialize(Collection);
+	if (!MapProjectileData())
+	{
+		UE_LOG(LogTemp, Error, TEXT("Couldn't Find any Projectile Data"));
+	}
 }
 
 const UProjectileData* UProjectileSubsystem::GetProjectileData(const FGameplayTag& Tag) const
@@ -16,7 +19,7 @@ const UProjectileData* UProjectileSubsystem::GetProjectileData(const FGameplayTa
 bool UProjectileSubsystem::MapProjectileData()
 {
 	return MapPrimaryAssets<UProjectileData>(
-		FPrimaryAssetType(TEXT("Projectiles")),
+		UProjectileData::StaticClass()->GetFName(),
 		AllProjectileData,
 		UProjectileSubsystem::GetProjectileTag
 	);

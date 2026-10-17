@@ -11,12 +11,16 @@
 /**
  * 
  */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDataLoaded);
+
 UCLASS()
 class AGEOFWAR_API UDataManagingGameInstanceSubsystem : public UGameInstanceSubsystem
 {
 	GENERATED_BODY()
 	
 protected:
+	
+	FOnDataLoaded OnDataLoaded;
 	
 	template<typename T>
 	bool MapPrimaryAssets(const FPrimaryAssetType& AssetType, TMap<FGameplayTag, TObjectPtr<T>>& OutMap,
@@ -27,10 +31,9 @@ protected:
 		UAssetManager& AssetManager = UAssetManager::Get();
 		
 		TArray<FPrimaryAssetId> AssetIDs;
-		
 		AssetManager.GetPrimaryAssetIdList(AssetType, AssetIDs);
 		
-		if (AssetIDs.Num() == 0)
+		if (AssetIDs.IsEmpty())
 		{
 			UE_LOG(LogTemp, Warning, TEXT("No Primary Assets Found For %s"), *AssetType.ToString());
 			return false;

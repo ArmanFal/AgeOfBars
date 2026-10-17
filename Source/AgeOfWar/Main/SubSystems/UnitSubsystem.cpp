@@ -2,6 +2,14 @@
 
 #include "Engine/AssetManager.h"
 
+void UUnitSubsystem::InitializeUnitData()
+{
+	if (!MapUnitData())
+	{
+		UE_LOG(LogTemp, Error, TEXT("Initialization of Unit Subsystem Failed"))
+	}
+}
+
 const UUnitData* UUnitSubsystem::GetUnitData(const FGameplayTag& Tag) const
 {
 	return GetMappedData<UUnitData>(Tag, AllUnitData);

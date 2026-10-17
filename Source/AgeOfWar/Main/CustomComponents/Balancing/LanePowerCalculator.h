@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Main/Managers//UnitLane.h"
+#include "Main/CustomComponents/Enums/UnitLane.h"
 #include "UObject/Object.h"
 #include "LanePowerCalculator.generated.h"
 

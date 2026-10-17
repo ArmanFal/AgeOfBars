@@ -3,10 +3,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "CustomComponents/Combat.h"
+#include "CustomComponents//Combat and Attributes/Combat.h"
 #include "CustomComponents/MinimalMovement.h"
 #include "Data/UUnitData.h"
-#include "CustomComponents/AttributesComponent.h"
+#include "CustomComponents/Combat and Attributes/AttributesComponent.h"
 #include "CustomComponents/ObjectPool.h"
 #include "Components/BoxComponent.h"
 #include "Components/WidgetComponent.h"
@@ -15,6 +15,8 @@
 #include "Managers/DamageableInterface.h"
 #include "Managers/LaneManager.h"
 #include "Unit.generated.h"
+
+class UCombatLifeBar;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUnitStateChanged, EUnitDetectionState, State);
 
@@ -40,11 +42,32 @@ public:
 
 	bool ApplyDataToUnit(const UUnitData* Data);
 	
+	void ApplyOverlayMaterial(UMaterialInterface* Material);
+	void DisableOverlayMaterial(UMaterialInterface* InputMaterial);
+	void DisableAnyOverlayMaterial();
+	
+	void ShowUnitAbility();
+	void HideUnityAbility();
+	
+	void SelectUnit();
+	void DeselectUnit();
+	
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	FAttributeSet GetUnitAttributes();
+	
+	UFUNCTION(BlueprintCallable)
+	void SetOverrideDefaultDetectionBehaviour(bool StatusOverride);
+	
 	void AssignLaneManager(ALaneManager* AssignedLaneManager);
 	
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	
+	bool bIsDetectionStopped{false};
+	
+	UFUNCTION()
+	void HandleAttributeChangeDelegate(FAttributeBase Attribute, FAttributeBaseHandler AttributeHandle);
 	
 	void HandleMovementDelegate(float DeltaTime);
 	EUnitDetectionState HandleUnitStateBasedOnDetectedUnits();
@@ -102,9 +125,15 @@ protected:
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta=(AllowPrivateAccess="true"))
 	ALaneManager* LaneManager;
+	
+	UPROPERTY(EditAnywhere, Category="Damage")
+	TObjectPtr<UCombatLifeBar> LifeBarWidget;
 
 	UPROPERTY(BlueprintReadOnly)
 	TArray<FHitResult> FrontUnitHitResult;
+	
+	UPROPERTY(BlueprintReadOnly)
+	AUnit* ClosestUnit;
 	
 	UPROPERTY(BlueprintReadOnly)
 	FVector DetectionOffset{0.f,0.f,0.f};
@@ -135,10 +164,19 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta=(AllowPrivateAccess="true"))
 	FGameplayTag UnitTag;
 	
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable, BlueprintPure)
 	ALaneManager* GetLaneManager();
 	
-	UFUNCTION(BlueprintCallable, Category = "Components|Combat")
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	const AUnit* GetClosestUnitInLane();
+	
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "LaneManager")
+	int GetUnitIndexOnOwningLane();
+	
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Combat")
+	AUnit* GetDetectedEnemyUnit() {return DetectedEnemyUnit; };
+	
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Components|Combat")
 	int GetTeamAffiliationIndex() {return TeamAffiliationIndex;};
 	
 	// Called every frame

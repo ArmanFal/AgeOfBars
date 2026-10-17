@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/TouchInterface.h"
+#include "GameplayTagContainer.h"
 #include "ObjectPoolHandlerInterface.generated.h"
 
 /**
@@ -22,8 +22,10 @@ class AGEOFWAR_API IObjectPoolHandlerInterface
 public:
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-	bool RequestReturnToPool(UObject* RequestingObject);
+	bool RequestReturnToPool
+	(UObject* RequestingObject, UObject* ReturnedObject);
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-	bool RequestReleaseFromPool(UObject* RequestingObject);
+	bool RequestReleaseFromPool
+	(FGameplayTag ReleaseObjectGameplayTag,UObject* RequestedBy, UObject*& ReleasedObject);
 };

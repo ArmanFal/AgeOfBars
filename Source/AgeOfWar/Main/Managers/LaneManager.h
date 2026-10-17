@@ -6,22 +6,23 @@
 #include "ObjectPoolHandlerInterface.h"
 #include "UObject/Object.h"
 #include "Main/CustomComponents/Balancing/LanePowerCalculator.h"
-#include "UnitLane.h"
+#include "Main/CustomComponents/Enums/UnitLane.h"
 #include "Main/Data/UUnitData.h"
 #include "Components/BillboardComponent.h"
 #include "LaneManager.generated.h"
 
 class AUnit;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnNewUnitSpawned, AUnit*, NewUnit);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnNewUnitSpawned, AUnit*, NewUnit, bool, SpawnFromLaneBegin);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnNewUnitDespawned, AUnit*, NewUnit);
 
 UCLASS()
-class AGEOFWAR_API ALaneManager : public AActor, public IObjectPoolHandlerInterface
+class AGEOFWAR_API ALaneManager : public AActor
 {
 	GENERATED_BODY()
 	
 	ALaneManager();
+	
 public:
 	
 	UPROPERTY(BlueprintAssignable)
@@ -29,9 +30,6 @@ public:
 	
 	UPROPERTY(BlueprintAssignable)
 	FOnNewUnitDespawned OnNewUnitDespawned;
-	
-	UFUNCTION(BlueprintImplementableEvent)
-	void K2_OnNewUnitSpawned(AUnit* NewUnit);
 	
 	UPROPERTY(BlueprintReadOnly)
 	FTransform SpawnTransform{FTransform::Identity};
@@ -45,14 +43,8 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Balancing")
 	TObjectPtr<ULanePowerCalculator> LanePowerCalculator;
 	
-	UPROPERTY(BlueprintReadWrite, Category = "Poolable Units")
-	int UnitsToPool{100};
-	
 	UPROPERTY(BlueprintReadOnly, Category = "Poolable Units")
-	TArray<TObjectPtr<AUnit>> PooledUnits;
-	
-	UPROPERTY(BlueprintReadOnly, Category = "Poolable Units")
-	TArray<TObjectPtr<AUnit>> SpawnedUnits;
+	TArray<AUnit*> SpawnedUnits;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Poolable Units")
 	TSubclassOf<AUnit> PooledUnitClass;
@@ -66,25 +58,32 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Team")
 	int GetTeamAffiliation() const {return TeamAffiliation; } ;
 	
-	UFUNCTION(BlueprintCallable)
-	AUnit* SpawnUnitOfTypeOnLane(UUnitData* UnitData);
+	UFUNCTION(BlueprintCallable, Category = "Team")
+	bool RemoveUnitFromLaneTracking(AUnit* Unit);
 	
 	UFUNCTION(BlueprintCallable)
-	void AddNewUnitToIndex(const int Index, AUnit* NewUnit);
+	bool AddNewUnitToIndex(const int Index, AUnit* NewUnit, const bool SpawnFromLaneBegin);
+	
+	UFUNCTION()
+	void ModifyLanePowerNewUnitSpawnedWrapper(AUnit* NewUnit, const bool SpawnFromLaneBegin);
 	
 	UFUNCTION(BlueprintCallable, Category = "Balancing")
 	ULanePowerCalculator* GetLanePowerCalculator() { return LanePowerCalculator ? LanePowerCalculator : nullptr; } ;
 	
 	void BindDelegatesForLanePowerModification();
 	
+	UPROPERTY(BlueprintReadOnly)
+	AActor* OwningTavern;
+	
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	AActor* GetAffiliatedTavern() {return OwningTavern;};
+	
 	UFUNCTION()
 	void ModifyLanePower(AUnit* Source);
 	
-	virtual bool RequestReturnToPool_Implementation(UObject* RequestingObject) override;
-	// virtual bool RequestReleaseFromPool_Implementation(AUnit* RequestingUnit) override;
-	
 	void HandleUnitPool(AUnit* PooledUnit);
 	
+	UFUNCTION(BlueprintCallable, BLueprintPure)
 	int GetUnitIndex(AUnit* Unit) const;
 	
 	virtual void BeginPlay() override;

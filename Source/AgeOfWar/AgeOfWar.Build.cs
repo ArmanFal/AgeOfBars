@@ -10,6 +10,7 @@ public class AgeOfWar : ModuleRules
 
 		PublicDependencyModuleNames.AddRange(new string[] {
 			"Core",
+			"Blutility",
 			"CoreUObject",
 			"Engine",
 			"InputCore",
@@ -20,6 +21,7 @@ public class AgeOfWar : ModuleRules
 			"GameplayStateTreeModule",
 			"UMG",
 			"Slate",
+			"SlateCore",
 			"Niagara"
 		});
 

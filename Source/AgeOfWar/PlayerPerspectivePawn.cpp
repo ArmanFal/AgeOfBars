@@ -47,25 +47,12 @@ void APlayerPerspectivePawn::BeginPlay()
 
 void APlayerPerspectivePawn::PossessedBy(AController* NewController)
 {
-
     Super::PossessedBy(NewController);
-
-    if (APlayerController* PC = Cast<APlayerController>(NewController))
-    {
-        if (ULocalPlayer* LocalPlayer = PC->GetLocalPlayer())
-        {
-            if (UEnhancedInputLocalPlayerSubsystem* Subsystem = LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>())
-            {
-                Subsystem->AddMappingContext(DefaultMappingContext, 0);
-                ResetCameraLocationAlongSpline();
-            }
-        }
-    }
 }
 
 void APlayerPerspectivePawn::MoveOnSpline()
 {
-    if (!Spline || !PlayerRoot) return; // <- To Debug later
+    if (!Spline || !SpringArm) return; // <- To Debug later
 
     // advance along spline
     CurrentDistanceOnSpline = FMath::Clamp(
@@ -76,9 +63,7 @@ void APlayerPerspectivePawn::MoveOnSpline()
 
     // location 
     FVector DesiredLocation = Spline->GetLocationAtDistanceAlongSpline(CurrentDistanceOnSpline, ESplineCoordinateSpace::World);
-    FVector CurrentLocation = PlayerRoot->GetComponentLocation();
-    
-
+    FVector CurrentLocation = SpringArm->GetComponentLocation();
 
     FVector NewLocation = FMath::VInterpConstantTo(
     CurrentLocation,
@@ -86,13 +71,14 @@ void APlayerPerspectivePawn::MoveOnSpline()
     GetWorld()->GetDeltaSeconds(),
     CameraLocationInterpSpeed);
     
-    PlayerRoot->AddWorldOffset(NewLocation - CurrentLocation);
+    SpringArm->AddWorldOffset(NewLocation - CurrentLocation);
 
+    // though unlikely to happen
     if (ChangeRotationAlongSpline)
     {
         FRotator CurrentRotation = PlayerRoot->GetComponentRotation();
         FRotator DesiredRotation = Spline->GetRotationAtDistanceAlongSpline(CurrentDistanceOnSpline, ESplineCoordinateSpace::World);
-        PlayerRoot->SetWorldRotation(FMath::RInterpTo(CurrentRotation, DesiredRotation - CurrentRotation, GetWorld()->GetDeltaSeconds(), CameraRotationInterpSpeed));
+        SpringArm->SetWorldRotation(FMath::RInterpTo(CurrentRotation, DesiredRotation - CurrentRotation, GetWorld()->GetDeltaSeconds(), CameraRotationInterpSpeed));
     }
     
 }
@@ -105,7 +91,7 @@ void APlayerPerspectivePawn::ResetCameraLocationAlongSpline()
 
         // Snap to spline start
         FVector StartLocation = Spline->GetLocationAtDistanceAlongSpline(0.f, ESplineCoordinateSpace::World);
-        PlayerRoot->SetWorldLocation(StartLocation);
+        SpringArm->SetWorldLocation(StartLocation);
 
         FRotator DesiredRotation = PlayerRoot->GetComponentRotation();
 

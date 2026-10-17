@@ -11,12 +11,15 @@
 /**
  * 
  */
+
+class UProjectileResponseOnImpact;
+
 UCLASS()
 class AGEOFWAR_API UProjectileData : public UPrimaryDataAsset
 {
 	GENERATED_BODY()
 	
-public:
+public:	
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Cosmetics")
 	FGameplayTag ProjectileTag;
@@ -24,9 +27,27 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Cosmetics")
 	TObjectPtr<UStaticMesh> Mesh;
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Cosmetics")
-	TObjectPtr<UNiagaraSystem> SpawnNiagaraEffect;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat")
+	TMap<FGameplayTag, TObjectPtr<UNiagaraSystem>> CombatNiagaraSystems;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay")
+	float ProjectileCollisionRadius;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay")
+	float ProjectileSpeedMultiplier;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay")
+	float ProjectileArc{0.5f};
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Instanced, Category = "Cosmetics")
+	TObjectPtr<UProjectileResponseOnImpact> ProjectileResponsesOnImpact{nullptr};
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay")
+	FVector ProjectileCollisionOffset;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Cosmetics")
-	TObjectPtr<UNiagaraSystem> ImpactNiagaraEffect;
+	bool ShowProjectileCollision{false};
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Cosmetics")
+	FTransform MeshOffset;
 };

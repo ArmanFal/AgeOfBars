@@ -8,20 +8,66 @@ UAbility::UAbility()
 	
 }
 
+void UAbility::Initialize()
+{
+	if (PreConditionStatus == EAbilityPreConditions::IsNotAssigned)
+	{
+		UE_LOG(LogTemp, Error, 
+			TEXT("%s Ability has no PreCondition Assigned ensure EAbilityPreconditions Enum variable is assigned"), *GetName());
+		return;
+	}
+	if (PreConditionStatus != EAbilityPreConditions::HasConditions)
+	{
+		return;
+	}
+	if (ASYNC_Condition)
+	{
+		ASYNC_AbilityCondition = NewObject<UAbilityConditions>(this, ASYNC_Condition);
+	}
+}
+
 void UAbility::DeInitialize()
 {
 	this->MarkAsGarbage();
 }
 
-void UAbility::ActivateAbility(AUnit* Owner) 
+bool UAbility::EvaluateConditions()
 {
-	AbilityOwner = Owner;
+	if (PreConditionStatus != EAbilityPreConditions::HasConditions
+		|| !ASYNC_AbilityCondition)
+	{
+		return true;
+	}
+	
+	ASYNC_AbilityCondition->OnConditionMet.BindUObject(this, &UAbility::OnActivatedWithCondition);
+	ASYNC_AbilityCondition->ExecuteCondition();
+	
+	if (ASYNC_AbilityCondition->OnConditionMet.IsBoundToObject(this))
+	{
+		return true;
+	}
+	return false;
+}
+
+void UAbility::TryActivateAbility(AUnit* Caller, AUnit* PotentialTarget) 
+{
+	AbilityOwner = Caller;
+	if (PreConditionStatus == EAbilityPreConditions::IsNotAssigned)
+	{
+		UE_LOG(LogTemp, Error, 
+			TEXT("%s Ability has no PreCondition Assigned ensure EAbilityPreconditions Enum variable is assigned"), *GetName());
+		return;
+	}
 	OnActivated();
+	// EvaluateConditions();
 }
 
 void UAbility::FinishAbility()
 {
-	// finish ability
+	if (ASYNC_AbilityCondition)
+	{
+		ASYNC_AbilityCondition->OnConditionMet.Unbind();
+	}
 }
 
 void UAbility::StopAbility()

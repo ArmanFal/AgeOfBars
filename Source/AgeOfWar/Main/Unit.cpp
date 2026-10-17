@@ -1,8 +1,12 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 #include "Unit.h"
 
+#include "CombatLifeBar.h"
+#include "SNegativeActionButton.h"
 #include "Data/UUnitData.h"
 #include "Managers/ObjectPoolHandlerInterface.h"
+#include "SubSystems/SubsystemLibrary.h"
+#include "SubSystems/PoolSingleton/UnitPoolHandler.h"
 
 
 // Sets default values
@@ -25,6 +29,11 @@ AUnit::AUnit()
 	AttributesBar->SetupAttachment(RootComponent);
 	InteractionWidget->SetupAttachment(RootComponent);
 	
+	if (AbilityWidget)
+	{
+		AbilityWidget->SetHiddenInGame(true);
+	}
+	
 	if (ensure(ObjectPoolComp))
 	{
 		ObjectPoolComp->OnOwnerPooled.AddDynamic(this, &AUnit::HandlePoolStatus);
@@ -33,6 +42,8 @@ AUnit::AUnit()
 	{
 		AttributeComp->OnDeath.AddDynamic(this, &AUnit::HandleDeath);
 	}
+	
+	AttributesBar->SetWidgetClass(LifeBarWidget.GetClass());
 }
 
 // Called when the game starts or when spawned
@@ -40,10 +51,31 @@ void AUnit::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	LifeBarWidget = Cast<UCombatLifeBar>(AttributesBar->GetUserWidgetObject());
+	check(LifeBarWidget);
+	LifeBarWidget->SetLifePercentage(0.f);	
 	if (ensure(AttributeComp))
 	{
-		AttributeComp->OnAnyAttributeChanged.AddDynamic(this, &AUnit::NotifyLaneManagerPowerChange);
+		AttributeComp->OnAttributeChangedOnAttributeComp.AddDynamic(this, &AUnit::HandleAttributeChangeDelegate);
 	}
+}
+
+void AUnit::HandleAttributeChangeDelegate(FAttributeBase Attribute, FAttributeBaseHandler AttributeHandle)
+{
+	/*
+	 * Can use this part to handle non gameplay effects like UI or edge cases.
+	 */
+	if (AttributeHandle == FAttributeSet::GetHealthAttribute())
+	{
+		check(LifeBarWidget);
+		float HealthPercent = 0;
+		if (!FMath::IsNearlyZero(Attribute.BaseValue))
+		{
+			HealthPercent = Attribute.CurrentValue / Attribute.BaseValue;
+		}
+		LifeBarWidget->SetLifePercentage(HealthPercent);	
+	}
+	NotifyLaneManagerPowerChange();
 }
 
 void AUnit::HandleDeath()
@@ -54,16 +86,25 @@ void AUnit::HandleDeath()
 	}
 	if (ensure(ObjectPoolComp))
 	{
-		IObjectPoolHandlerInterface::Execute_RequestReturnToPool(LaneManager, this);
+		UUnitPoolHandler* PoolHandler = SubsystemsGetter::GetWorldSubsystem<UUnitPoolHandler>(this);
+		IObjectPoolHandlerInterface::Execute_RequestReturnToPool(PoolHandler, this, this);
 	}
 }
 
 void AUnit::HandlePoolStatus(bool IsInUse, UObject* PoolInstigator)
 {
 	SetActorTickEnabled(IsInUse);
+	check(LifeBarWidget)
+	if (IsInUse)
+	{
+		// Temporarily we set the health to always be one when we pool
+		LifeBarWidget->SetLifePercentage(1.f);
+	}
 	if (!IsInUse)
 	{
 		ApplyDataToUnit(GetDefault<UUnitData>());
+		LaneManager = nullptr;
+		TeamAffiliationIndex = 0;
 		MinimalMovementComp->OnTickMovementDelegate.Unbind();
 		MinimalMovementComp->StopMovement();
 		SetActorTickEnabled(false);
@@ -76,13 +117,14 @@ bool AUnit::ApplyDataToUnit(const UUnitData* Data)
 	{
 		return false;
 	}
+	
 	CharacterMesh->SetWorldScale3D(Data->Scale);
 	CharacterMesh->SetSkeletalMesh(Data->Mesh);
 	CharacterMesh->SetAnimInstanceClass(Data->AnimClass);
 	AttributeComp->SetAttribute(Data->AttributeSet);
-	CombatComp->AssignAbility(Data->Ability);
+	CombatComp->AssignUnitAbility(Data->Ability);
+	CombatComp->AssignAttackBehaviour(Data->Attackbehaviour);
 	UpdateUnitTag(Data->UnitTag);
-	
 	return true;
 }
 
@@ -104,6 +146,10 @@ void AUnit::Tick(float DeltaTime)
 
 void AUnit::HandleMovementDelegate(float DeltaTime)
 {
+	if (bIsDetectionStopped)
+	{
+		return;
+	}
 	if (DetectFrontUnit(DeltaTime))
 	{
 		const EUnitDetectionState State = HandleUnitStateBasedOnDetectedUnits();
@@ -124,6 +170,17 @@ EUnitDetectionState AUnit::HandleUnitStateBasedOnDetectedUnits()
 	float UnitDistance = TNumericLimits<float>::Max();;
 	AUnit* ClosestUnitCandidate = nullptr;
 	AUnit* ClosetEnemyUnitCandidate = nullptr;
+	
+	if (!GetLaneManager())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("%s Has No Valid Lane Manager."), *GetName());
+		return EUnitDetectionState::UnknownState;
+	}
+	if (GetLaneManager()->GetUnitIndex(this) == INDEX_NONE)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("%s Has No Valid UnitIndex Registered at LaneManager."), *GetName());
+		return EUnitDetectionState::UnknownState;
+	}
 	
 	const int ThisIndex = GetLaneManager()->GetUnitIndex(this);
 	
@@ -229,6 +286,7 @@ EUnitDetectionState AUnit::HandleUnitStateBasedOnDetectedUnits()
 	} 
 	if (bHasFoundEnemy)
 	{
+		DetectedEnemyUnit = ClosetEnemyUnitCandidate;
 		return EUnitDetectionState::EnemiesOnlyDetected;
 	}
 
@@ -272,6 +330,11 @@ void AUnit::AssignLaneManager(ALaneManager* AssignedLaneManager)
 	Destroy();
 }
 
+void AUnit::SetOverrideDefaultDetectionBehaviour(bool StatusOverride)
+{
+	bIsDetectionStopped = StatusOverride;
+}
+
 bool AUnit::DealDamage_Implementation(float Damage)
 {
 	if (!AttributeComp)
@@ -287,13 +350,117 @@ bool AUnit::DealDamage_Implementation(float Damage)
 	return FMath::Abs(FinalDamage) > 0.f;
 }
 
+const AUnit* AUnit::GetClosestUnitInLane()
+{
+	AUnit* thisClosestUnit = nullptr;
+	float Distance = TNumericLimits<float>::Max();
+	
+	for (int i = 0; i < FrontUnitHitResult.Num(); i++)
+	{
+		FVector ThisUnitLocation = GetActorLocation();
+		AUnit* UnitCandidate = Cast<AUnit>(FrontUnitHitResult[i].GetActor());
+		
+		if (!UnitCandidate)
+		{
+			continue;
+		}
+		
+		FVector UnitCandidateLocation = UnitCandidate->GetActorLocation();
+		
+		const float DistanceBetweenUnits = FVector::Dist(UnitCandidateLocation, ThisUnitLocation);
+		
+		if (DistanceBetweenUnits < Distance)
+		{
+			Distance = DistanceBetweenUnits;
+			thisClosestUnit = UnitCandidate;
+		}
+	}
+	return thisClosestUnit;
+}
+
 ALaneManager* AUnit::GetLaneManager()
 {
 	return LaneManager;
 }
 
+int AUnit::GetUnitIndexOnOwningLane() 
+{
+	if (GetLaneManager())
+	{
+		return GetLaneManager()->GetUnitIndex(this);
+	}
+	UE_LOG(LogTemp, Warning, TEXT("Invalid Lane Manager"))
+	return 0;
+}
+
+FAttributeSet AUnit::GetUnitAttributes()
+{
+	return AttributeComp->GetAttributeSetCopy();
+}
+
 void AUnit::NotifyLaneManagerPowerChange()
 {
-	GetLaneManager()->ModifyLanePower(this);
+	if (GetLaneManager())
+	{
+		GetLaneManager()->ModifyLanePower(this);
+	}
 }
+
+void AUnit::ApplyOverlayMaterial(UMaterialInterface* Material)
+{
+	if (!Material)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Material Applied to unit is invalid."))
+		return;
+	}
+	CharacterMesh->SetOverlayMaterial(Material);
+}
+
+void AUnit::DisableOverlayMaterial(UMaterialInterface* InputMaterial)
+{
+	if (CharacterMesh->GetOverlayMaterial() == InputMaterial)
+	{
+		CharacterMesh->SetOverlayMaterial(nullptr);
+	}
+}
+
+void AUnit::SelectUnit()
+{
+	if (AbilityWidget)
+	{
+		AbilityWidget->SetHiddenInGame(false);
+	}
+}
+
+void AUnit::DeselectUnit()
+{
+	if (AbilityWidget)
+	{
+		AbilityWidget->SetHiddenInGame(true);
+	}
+}
+
+void AUnit::DisableAnyOverlayMaterial()
+{
+	CharacterMesh->SetOverlayMaterial(nullptr);
+}
+
+void AUnit::ShowUnitAbility()
+{
+	if (!AbilityWidget)
+	{
+		return;
+	}
+	AbilityWidget->SetHiddenInGame(false);
+}
+
+void AUnit::HideUnityAbility()
+{
+	if (!AbilityWidget)
+	{
+		return;
+	}
+	AbilityWidget->SetHiddenInGame(true);
+}
+
 

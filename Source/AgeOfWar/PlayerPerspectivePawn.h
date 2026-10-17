@@ -25,9 +25,7 @@ protected:
 
 	// Called when the pawn is possessed
 	virtual void PossessedBy(AController* NewController) override;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
-	UInputMappingContext* DefaultMappingContext;
+	
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	UInputAction* MovingCamera;

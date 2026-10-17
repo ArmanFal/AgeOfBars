@@ -9,6 +9,10 @@
 	{										\
 	return Name;							\
 	}										\
+	const Type& GetIdentity##Name() const			\
+	{										\
+		return Name;						\
+	}										\
 	void Set##Name(Type InValue, bool bApplyNewValueInstant)			\
 	{										\
 	if (bApplyNewValueInstant) { Name = InValue;} \
@@ -30,6 +34,7 @@ struct FAttributeSet
 	
 	GENERATED_BODY()
 	
+	UPROPERTY(BlueprintAssignable)
 	FOnAttributeChanged OnAttributeChanged;
 	
 	static void SetCurrentValueToBaseValue(FAttributeBase& Attribute)
@@ -59,19 +64,19 @@ struct FAttributeSet
 	}
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	FAttributeBase Health{100.f};
+	FAttributeBase Health{};
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	FAttributeBase Damage{10.f};
+	FAttributeBase Damage{};
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	FAttributeBase Speed{20.f};
+	FAttributeBase Speed{};
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	FAttributeBase AttackRange{100.f};
+	FAttributeBase AttackRange{};
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	FAttributeBase AttackSpeed{100.f};
+	FAttributeBase AttackSpeed{};
 	
 public:
 	

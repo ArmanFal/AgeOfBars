@@ -3,6 +3,7 @@
 #include "AttributeSet.h"
 #include "UUnitData.generated.h"
 
+class UNiagaraSystem;
 class UUnitDetection;
 class UAbility;
 class AWeaponBase;
@@ -16,13 +17,16 @@ class AGEOFWAR_API UUnitData : public UPrimaryDataAsset
 public:
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Unit")
+	FName UnitName;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Unit")
 	FGameplayTag UnitTag;
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (ToolTip = "These are the Base values and cannot be changed in real time"))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Unit")
 	bool CanAttackWhileMovement{false};
 	
 	// To Implement Later
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (ToolTip = "These are the Base values and cannot be changed in real time"))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Unit")
 	bool CanAttackIfFriendlyUnitInTheWay{false};
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Unit Size")
@@ -37,9 +41,19 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Animation")
 	UAnimMontage* AttackMontage{nullptr};
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Ability")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat")
+	TSubclassOf<UAbility> Attackbehaviour {nullptr};
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat")
 	TSubclassOf<UAbility> Ability {nullptr};
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat")
+	UTexture2D* AbilityImage;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat")
+	TMap<FGameplayTag, TObjectPtr<UNiagaraSystem>> CombatNiagaraSystems;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FAttributeSet AttributeSet {};
+	
 };

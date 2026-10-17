@@ -12,6 +12,9 @@ class AGEOFWAR_API UUnitSubsystem : public UDataManagingGameInstanceSubsystem
 
 public:
 	
+	UFUNCTION(BlueprintCallable)
+	void InitializeUnitData();
+	
 	bool MapUnitData();
 	
 	UFUNCTION(BlueprintCallable)

@@ -17,11 +17,12 @@ class AGEOFWAR_API UProjectileSubsystem : public UDataManagingGameInstanceSubsys
 {
 	GENERATED_BODY()
 	
-	int ProjectilePoolSize{300};
-	
 public:
 	
 	bool MapProjectileData();
+	
+	UFUNCTION(BlueprintCallable)
+	void InitializeProjectileData();
 	
 	UFUNCTION(BlueprintCallable)
 	const UProjectileData* GetProjectileData(const FGameplayTag& Tag) const;
@@ -35,7 +36,5 @@ protected:
 	TMap<FGameplayTag, TObjectPtr<UProjectileData>> AllProjectileData;
 	
 	static FGameplayTag GetProjectileTag(const UProjectileData* Data);
-	
-	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 
 };

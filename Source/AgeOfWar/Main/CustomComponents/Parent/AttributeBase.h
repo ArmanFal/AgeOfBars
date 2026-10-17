@@ -11,10 +11,10 @@ struct AGEOFWAR_API FAttributeBase
 	GENERATED_BODY()
 	
 	UPROPERTY(BlueprintReadOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	float CurrentValue;
+	float CurrentValue{0.f};
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	float BaseValue;
+	float BaseValue{0.f};
 };
 
 USTRUCT(BlueprintType)
@@ -25,6 +25,16 @@ struct AGEOFWAR_API FAttributeBaseHandler
 	FAttributeBaseHandler() = default;
 	
 	FAttributeBaseHandler(FProperty* Property) : Property(Property) {}
+	
+	bool operator==(const FAttributeBaseHandler& Other) const
+	{
+		return Property == Other.Property;
+	}
+
+	bool operator!=(const FAttributeBaseHandler& Other) const
+	{
+		return !(*this == Other);
+	}
 	
 	FProperty* Property = nullptr;
 	
