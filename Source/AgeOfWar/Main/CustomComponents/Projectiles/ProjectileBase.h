@@ -44,6 +44,9 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FOnProjectileDeinitialized OnProjectileDeinitialized;
 	
+	UPROPERTY(BlueprintReadOnly)
+	FGameplayTag ProjectileTag;
+	
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	AUnit* GetProjectileOwnerAsUnit() const;
 

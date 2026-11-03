@@ -78,35 +78,6 @@ void AProjectileBase::HandleProjectileBeginOverLap(UPrimitiveComponent* Overlapp
 		return;
 	} 
 	UE_LOG(LogTemp, Error, TEXT("The projectile's response on Impact was not assigned or called after deinitialization"));
-	
-	// switch (ProjectileResponseOnImpact)
-	// {
-	// 	
-	// case EProjectileResponseOnImpact::NotAssigned :
-	// 	
-	// 	{
-	// 		UE_LOG(LogTemp, Error, TEXT("The projectile's response on Impact was not assigned"));
-	// 	}
-	// 	
-	// case EProjectileResponseOnImpact::SingleTarget:
-	// 	
-	// 	{
-	// 	
-	// 		AUnit* OtherUnit = Cast<AUnit>(OtherActor);
-	//
-	// 		if (OtherUnit && OtherUnit->GetTeamAffiliationIndex() != GetProjectileOwner()->GetTeamAffiliationIndex())
-	// 		{
-	// 			float FinalDamage = GetProjectileOwner()->GetUnitAttributes().GetDamage().CurrentValue;
-	// 			IdamageableInterface::Execute_DealDamage(OtherUnit, FinalDamage);
-	// 		}
-	// 	}
-	// 	
-	// case EProjectileResponseOnImpact::AreaOfEffect:
-	// 	
-	// 	{
-	// 		
-	// 	}
-	// }
 }
 
 void AProjectileBase::HandleProjectileInitialization(const UProjectileData* Data)

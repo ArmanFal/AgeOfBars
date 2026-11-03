@@ -112,7 +112,6 @@ void AMainGameplayController::DetectUnderCursor(float DeltaTime)
 
 bool AMainGameplayController::TrySelectUnitUnderCursor()
 {
-	// Do nothing if its the same unit
 	if (bHasSelectedAUnit)
 	{
 		return false;
@@ -123,6 +122,7 @@ bool AMainGameplayController::TrySelectUnitUnderCursor()
 		return false;
 	}
 	
+	// Deselect if we have a current unit
 	if (!CursorUnit)
 	{	
 		bHasSelectedAUnit = false;
@@ -134,17 +134,17 @@ bool AMainGameplayController::TrySelectUnitUnderCursor()
 		return false;
 	}
 	// 1 is reserved Team Affiliation Index for the player
-	if (SelectedUnit->GetTeamAffiliationIndex() == 1)
+	if (CursorUnit->GetTeamAffiliationIndex() == 1)
 	{
-		
+		SelectedUnit = CursorUnit;
+		SelectedUnit->DisableOverlayMaterial(SelectOverlayMaterial);
+		SelectedUnit->ApplyOverlayMaterial(SelectOverlayMaterial);
+		SelectedUnit->ShowUnitAbility();
+		SelectedUnit->GetObjectPool()->OnOwnerPooled.AddUniqueDynamic(this, &AMainGameplayController::SelectedUnitPooledWrapper);
+		bHasSelectedAUnit = true;
+		return true;
 	}
-	SelectedUnit = CursorUnit;
-	SelectedUnit->DisableOverlayMaterial(SelectOverlayMaterial);
-	SelectedUnit->ApplyOverlayMaterial(SelectOverlayMaterial);
-	SelectedUnit->ShowUnitAbility();
-	SelectedUnit->GetObjectPool()->OnOwnerPooled.AddUniqueDynamic(this, &AMainGameplayController::SelectedUnitPooledWrapper);
-	bHasSelectedAUnit = true;
-	return true;
+	return false;
 }
 
 void AMainGameplayController::DeselectUnit()
@@ -153,6 +153,7 @@ void AMainGameplayController::DeselectUnit()
 	{
 		return;
 	}
+	UE_LOG(LogTemp, Warning, TEXT("DeSelected Unit!"))
 	bHasSelectedAUnit = false;
 	SelectedUnit->HideUnityAbility();
 	SelectedUnit->DisableOverlayMaterial(SelectOverlayMaterial);
@@ -207,7 +208,6 @@ void AMainGameplayController::SendClickEvent()
 			LocationUnderCursor);
 		return;
 	}
-	UE_LOG(LogTemp, Warning, TEXT("The Object %s must implement CursorReceiveHandlerInterface."), *ClickEventTarget->GetName());
 }
 
 void AMainGameplayController::SetAllowLaneIndicatorDetectionByCursor_Implementation(bool IsActive)

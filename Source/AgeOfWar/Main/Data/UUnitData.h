@@ -23,6 +23,9 @@ public:
 	FGameplayTag UnitTag;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Unit")
+	TObjectPtr<UTexture2D> UnitImage;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Unit")
 	bool CanAttackWhileMovement{false};
 	
 	// To Implement Later
@@ -48,10 +51,13 @@ public:
 	TSubclassOf<UAbility> Ability {nullptr};
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat")
-	UTexture2D* AbilityImage;
+	TObjectPtr<UTexture2D> AbilityImage;
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat")
-	TMap<FGameplayTag, TObjectPtr<UNiagaraSystem>> CombatNiagaraSystems;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Effects")
+	TMap<FGameplayTag, TObjectPtr<UNiagaraSystem>> NiagaraSystems;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Effects")
+	TMap<FGameplayTag, TObjectPtr<USoundBase>> AudioEffects;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FAttributeSet AttributeSet {};

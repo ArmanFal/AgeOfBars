@@ -19,6 +19,7 @@
 class UCombatLifeBar;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUnitStateChanged, EUnitDetectionState, State);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnUnitDied);
 
 UCLASS()
 class AGEOFWAR_API AUnit : public AActor, public IdamageableInterface
@@ -32,11 +33,20 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Detection")
 	FOnUnitStateChanged OnUnitStateChanged;
 	
+	UPROPERTY(BlueprintAssignable, Category = "Death")
+	FOnUnitDied OnUnitDied;
+	
+	UFUNCTION(BlueprintNativeEvent)
+	void UnitSpawned();
+	
 	// UFUNCTION(BlueprintImplementableEvent, Category = "Events")
 	// void NewDetectionState(EUnitDetectionState State);
 	
 	UPROPERTY(BlueprintReadWrite)
 	bool bAutomaticallyHandlePoolAfterDeath{true};
+	
+	UPROPERTY(BlueprintReadWrite)
+	bool bCanDoAbility{true};
 	
 	UObjectPool* GetObjectPool() { return ObjectPoolComp; };
 

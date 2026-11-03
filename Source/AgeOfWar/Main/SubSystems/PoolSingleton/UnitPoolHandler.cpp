@@ -53,6 +53,7 @@ bool UUnitPoolHandler::RequestReleaseFromPool_Implementation(FGameplayTag Releas
 	AUnit* Unit = PooledUnits.Pop(EAllowShrinking::No).Get();
 	if (!Unit)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("Requested for Release Unit is Invalid."));
 		return false;
 	}
 	if (Unit->GetObjectPool()->AcquireFromPool(RequestedBy))
@@ -61,9 +62,10 @@ bool UUnitPoolHandler::RequestReleaseFromPool_Implementation(FGameplayTag Releas
 		ReleasedObject = Unit;
 		return true;
 	}
-	
 	// Send it back to the pooled units if acquire fails
-	PooledUnits.AddUnique(Unit);
+	UE_LOG(LogTemp, Warning, TEXT("Object Pool acquire from pool returned false, returning the unit into pool."));
+	PooledUnits.Add(Unit);
+	Unit->GetObjectPool()->ReleaseIntoPool(RequestedBy);
 	return false;
 }
 
@@ -83,7 +85,7 @@ bool UUnitPoolHandler::RequestReturnToPool_Implementation(UObject* RequestingObj
 	
 	Unit->GetObjectPool()->ReleaseIntoPool(ReturnedObject);
 	SpawnedUnits.Remove(Unit);
-	PooledUnits.AddUnique(Unit);
+	PooledUnits.Add(Unit);
 	return true;
 }
 

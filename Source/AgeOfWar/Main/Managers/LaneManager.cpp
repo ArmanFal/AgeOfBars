@@ -44,7 +44,7 @@ void ALaneManager::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	LanePowerCalculator = NewObject<ULanePowerCalculator>();
+	// LanePowerCalculator = NewObject<ULanePowerCalculator>();
 		
 	BindDelegatesForLanePowerModification();
 	SpawnTransform = BillboardSpawnLocation->GetComponentTransform();
@@ -108,7 +108,7 @@ void ALaneManager::ModifyLanePower(AUnit* Source)
 			TEXT("For %s a LanePower Calculator was not created, AI will not behave as intended"), *GetName());
 	}
 	bool bIsFriendly = Source->GetTeamAffiliationIndex() == TeamAffiliation;
-	GetLanePowerCalculator()->ExecuteUnitWeightCalculation(Source, bIsFriendly);
+	// GetLanePowerCalculator()->ExecuteUnitWeightCalculation(Source, bIsFriendly);
 }
 
 bool ALaneManager::RemoveUnitFromLaneTracking(AUnit* Unit)

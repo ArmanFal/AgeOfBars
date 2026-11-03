@@ -76,6 +76,9 @@ public:
 	UFUNCTION(BlueprintCallable,BlueprintPure, Category = "Components|Combat|Ability")
 	bool PerformAbilityHasConditions() const;
 	
+	UPROPERTY(BlueprintReadOnly, Category = "Components|Combat")
+	bool bHasPerformedAbility = false;
+	
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;

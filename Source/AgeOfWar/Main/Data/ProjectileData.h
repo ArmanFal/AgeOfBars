@@ -30,6 +30,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat")
 	TMap<FGameplayTag, TObjectPtr<UNiagaraSystem>> CombatNiagaraSystems;
 	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat")
+	TMap<FGameplayTag, TObjectPtr<USoundBase>> Audios;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay")
 	float ProjectileCollisionRadius;
 	

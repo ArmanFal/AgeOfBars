@@ -53,7 +53,7 @@ bool AAgeOfBarsGameMode::RequestSpawnUnit_Implementation(int ForTeam, FGameplayT
 		FailureLog = "Did not find the UnitPoolHandler subsystem";
 		return false;
 	}
-	UObject* PooledObject {nullptr};
+	UObject* PooledObject = nullptr;
 	
 	if (!IObjectPoolHandlerInterface::Execute_RequestReleaseFromPool(UnitPoolHandler, UnitToSpawn, this, PooledObject))
 	{

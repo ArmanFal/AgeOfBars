@@ -87,7 +87,10 @@ void AUnit::HandleDeath()
 	if (ensure(ObjectPoolComp))
 	{
 		UUnitPoolHandler* PoolHandler = SubsystemsGetter::GetWorldSubsystem<UUnitPoolHandler>(this);
-		IObjectPoolHandlerInterface::Execute_RequestReturnToPool(PoolHandler, this, this);
+		if (IObjectPoolHandlerInterface::Execute_RequestReturnToPool(PoolHandler, this, this))
+		{
+			OnUnitDied.Broadcast();
+		}
 	}
 }
 
@@ -99,6 +102,12 @@ void AUnit::HandlePoolStatus(bool IsInUse, UObject* PoolInstigator)
 	{
 		// Temporarily we set the health to always be one when we pool
 		LifeBarWidget->SetLifePercentage(1.f);
+		if (GetTeamAffiliationIndex() != 1)
+		{
+			LifeBarWidget->SetBarColor(FColor::Red);
+		}
+		bCanDoAbility = true;
+		
 	}
 	if (!IsInUse)
 	{
@@ -125,6 +134,7 @@ bool AUnit::ApplyDataToUnit(const UUnitData* Data)
 	CombatComp->AssignUnitAbility(Data->Ability);
 	CombatComp->AssignAttackBehaviour(Data->Attackbehaviour);
 	UpdateUnitTag(Data->UnitTag);
+	UnitSpawned();
 	return true;
 }
 
@@ -426,7 +436,7 @@ void AUnit::DisableOverlayMaterial(UMaterialInterface* InputMaterial)
 
 void AUnit::SelectUnit()
 {
-	if (AbilityWidget)
+	if (AbilityWidget && !CombatComp->bHasPerformedAbility)
 	{
 		AbilityWidget->SetHiddenInGame(false);
 	}
@@ -461,6 +471,11 @@ void AUnit::HideUnityAbility()
 		return;
 	}
 	AbilityWidget->SetHiddenInGame(true);
+}
+
+void AUnit::UnitSpawned_Implementation()
+{
+	
 }
 
 

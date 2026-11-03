@@ -21,6 +21,7 @@ bool UCombat::PerformAbility()
 	bool Activated = PerformUnitAction(UnitAbility);
 	if (Activated)
 	{
+		bHasPerformedAbility = true;
 		PerformingState = EUnitPerformingState::IsPerformingAbility;
 	}
 	return Activated;
@@ -50,6 +51,7 @@ bool UCombat::PerformUnitAction(UAbility* AbilityReference) const
 
 bool UCombat::AssignUnitAbility(TSubclassOf<UAbility> Ability)
 {
+	bHasPerformedAbility = false;
 	return AssignBehaviourToVarriable(Ability, UnitAbility);
 }
 

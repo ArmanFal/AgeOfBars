@@ -81,7 +81,7 @@ bool UProjectilePoolHandler::RequestReleaseFromPool_Implementation(FGameplayTag 
 	ReleasedObject = ChosenProjectile;
 	
 	ChosenProjectile->HandleProjectileInitialization(ProjectileData);
-	
+	ChosenProjectile->ProjectileTag = ProjectileData->ProjectileTag;
 	if (RequestedBy)
 	{
 		ChosenProjectile->AssignProjectileOwner(RequestedBy);
@@ -123,6 +123,7 @@ bool UProjectilePoolHandler::RequestReturnToPool_Implementation(UObject* Request
 	ReturnedProjectile->HandleProjectileDeinitialization();
 	ReturnedProjectile->AssignProjectileOwner(nullptr);
 	ReturnedProjectile->HandlePoolStatus(true, this);
+	ReturnedProjectile->ProjectileTag = FGameplayTag::EmptyTag;
 	
 	return true;
 }
