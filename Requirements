@@ -1,0 +1,104 @@
+Global Standard
+
+GS - 01: All Classes, Functions, variables and components, inside Blueprints and C++ must follow a consistent naming convention that communicates their responsibility clearly.
+
+GS - 02: Systems must use encapsulation so that implementation details are hidden behind the given API.
+
+GS - 03: The variables may only be exposed given BlueprintReadOnly or remain private, in case of private a getter must be provided if the system affects gameplay directly.
+
+GS - 04: Gameplay Systems must expose designer friendly configuration through Unreal Properties, Defaults, Data Asset orBlueprint Events.
+
+GS - 05: Responsibilities must be clearly separate so that data storage runtime behaviour and life cycles are not combined into a single god class.
+
+GS-06: Systems that communicate state changes must prefer events/delegates/interfaces where continuous polling or hard coupling is unnecessary.
+
+GS-07: The Designer must be able to independently create and change gameplay interactions as independently as possible.
+
+
+All Subsystems:
+
+SUB-01: Each subsystem must have one clearly defined responsibility, reflected in its class name.
+
+SUB-02: Subsystems must expose appropriate methods that enable other gameplay systems to retrieve their data or capabilities.
+
+SUB-03: Game wide persistent data must use UGameInstanceSubsytem, while actor managing subsystems must use UWorldSubsystem.
+
+
+Pool Handling Subsystems:
+
+POOL-01: Frequently spawned gameplay actors must remain reusable instead of repeatedly created and destroyed during gameplay.
+
+POOL-02: A Pool object must have a clear and traceable active and inactive state.
+
+POOL-03: Inactive pooled actors must disable unnecessary runtime behaviour such as tick and visibility.
+
+
+Unit Handling Subsystems:
+
+UNIT-H-01 : Units must support reuse by object pooling system.
+
+UNIT-H-02 : Acquired Units must know where to be positioned and which team they belong to.
+
+UNIT-H-03 : A generic unit actor must support multiple types through data asset configuration.
+
+
+Data Handling Subsystems:
+
+DATA - 01 : Data must remain separate from gameplay objects.
+
+DATA - 02 : Data must use Primary data assets to be discoverable using Unreal Asset Manager.
+
+DATA - 03 : Duplicate Gameplay Tags which are used as key identifiers must detected duplication.
+
+
+Pool Interface:
+
+PINT - 01: The interface must expose an interface for requesting and returning objects.
+
+PINT - 02: The Interface's implementation must communicate whether the operation succeeded or failed.
+
+PINT- 03: The interface must be implementable to any object pools using the same signatures.
+
+
+Unit Class:
+
+UNIT - 01: AUnit must be the generic abstract class for any spawnable unit.
+
+UNIT - 02: Gameplay Behaviour must be divided into modular components when necessary.
+
+UNIT - 03: a unit must retrieve behaviour and types through data assets include visuals, animations, attributes and behaviours.
+
+
+Modular Components:
+
+COMP - 01 : Gameplay behaviour that can work independently must be implemented as a reusable and modular component.
+
+COMP - 02 : Components shall communicate through narrow public APIs, delegates, or shared data rather than directly manipulating unrelated systems.
+
+LaneManager Class:
+
+LM - 01 : Every lane must have a manager per team responsible for its runtime Unit population and managing appropriate formation.
+
+LM - 02:  spawning, removal and reordering must be supported and exposed to blueprints.
+
+LM - 03: Lanes must contain a team index to their corresponding team.
+
+
+
+Cursor Interface:
+
+CRSR-01 : Gameplay objects requiring cursor interaction shall implement the cursor handler interface.
+
+CRSR - 02 : The Custom Cursor must be managed by the player controller.
+
+CRSR - 03: must provide appropriate user feedback when necessary including lane indicators.
+
+
+
+Game Mode Class:
+
+GM - 01 : The Game Mode must define gameplay rules rather than implementing individual Unit, Projectile, Combat, or Data behaviour. 
+
+GM - 02 : Interact with other systems through public APIs rather than manipulating their internal state directly.
+
+GM - 03 : must initialize game specific subsystems but remain separate from reusable subsystem and actor initialization.
