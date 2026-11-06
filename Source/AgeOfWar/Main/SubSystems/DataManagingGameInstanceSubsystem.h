@@ -26,6 +26,7 @@ protected:
 	bool MapPrimaryAssets(const FPrimaryAssetType& AssetType, TMap<FGameplayTag, TObjectPtr<T>>& OutMap,
 		TFunctionRef<FGameplayTag(const T*)> GetTag) const
 	{
+		// making sure we don't map assets repeatedly
 		OutMap.Empty();
 		
 		UAssetManager& AssetManager = UAssetManager::Get();
@@ -39,6 +40,8 @@ protected:
 			return false;
 		}
 		
+		// For each asset we find map them into their appropriate tags this is usually set by the designer in 
+		// Data assets if a data tag is duplicated or not assigned you may receive a console error.
 		for (const FPrimaryAssetId& PrimaryAssetId : AssetIDs)
 		{
 			const FSoftObjectPath Path = AssetManager.GetPrimaryAssetPath(PrimaryAssetId);
@@ -71,6 +74,8 @@ protected:
 		
 		return !OutMap.IsEmpty();
 	}
+	
+	// Helper templates for each data getters
 	
 	template<typename T>
 	const T* GetMappedData(const FGameplayTag& Tag, const TMap<FGameplayTag, TObjectPtr<T>>& DataMap) const
