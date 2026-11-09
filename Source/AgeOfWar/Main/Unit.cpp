@@ -195,18 +195,23 @@ EUnitDetectionState AUnit::HandleUnitStateBasedOnDetectedUnits()
 EUnitDetectionState AUnit::DetectionStateBehaviour()
 {
 	
+	ClosestEnemyImpactPoint = FVector::ZeroVector;
+	ClosestFriendlyImpactPoint = FVector::ZeroVector;
+	
 	if (FrontUnitHitResult.IsEmpty())
 	{
+		DetectedEnemyUnit = nullptr;
 		return EUnitDetectionState::NoBlockingUnitDetected;
 	}
 	
 	bool bFoundFriendly = false;
 	bool bFoundEnemy = false;
 	
-	float UnitDistance = TNumericLimits<float>::Max();;
+	float EnemyDistance = TNumericLimits<float>::Max();;
+	float FriendlyDistance = TNumericLimits<float>::Max();
 	
 	AActor* ClosestEnemyCandidate = nullptr;
-	FVector ClosestEnemyImpactPoint = FVector::ZeroVector;
+	AActor* ClosestFriendlyCandidate = nullptr;
 	
 	for (int i = 0; i < FrontUnitHitResult.Num(); i ++)
 	{
@@ -221,6 +226,8 @@ EUnitDetectionState AUnit::DetectionStateBehaviour()
 		
 		EAffiliationToSelf Affiliation = 
 			IUnitDetectableInterface::Execute_GetAffiliationOfTarget(Candidate, GetTeamAffiliationIndex());
+		const FVector TargetLocation = FrontUnitHitResult[i].ImpactPoint;
+		const float CheckingDistance = FVector::Dist(GetActorLocation(), TargetLocation);
 		
 		switch (Affiliation)
 		{
@@ -233,20 +240,23 @@ EUnitDetectionState AUnit::DetectionStateBehaviour()
 			
 		case EAffiliationToSelf::Enemy :
 			{
-				const FVector TargetLocation = FrontUnitHitResult[i].ImpactPoint;
-				const float CheckingDistance = FVector::Dist(GetActorLocation(), TargetLocation);
-		
-				if (CheckingDistance < UnitDistance)
+				if (CheckingDistance < EnemyDistance)
 				{
-					ClosestEnemyImpactPoint = TargetLocation;
 					ClosestEnemyCandidate = Candidate;
-					UnitDistance = CheckingDistance;
+					ClosestEnemyImpactPoint = Hits.ImpactPoint;
+					EnemyDistance = CheckingDistance;
 				}
 				bFoundEnemy = true;
 				break;
 			}
 		case EAffiliationToSelf::Friendly :
 			{
+				if (CheckingDistance < FriendlyDistance)
+				{
+					ClosestFriendlyCandidate = Candidate;
+					ClosestFriendlyImpactPoint = Hits.ImpactPoint;
+					FriendlyDistance = CheckingDistance;
+				}
 				bFoundFriendly = true;
 				break;
 			}
@@ -257,7 +267,6 @@ EUnitDetectionState AUnit::DetectionStateBehaviour()
 	if (bFoundEnemy)
 	{
 		DetectedEnemyUnit = ClosestEnemyCandidate;
-		ClosestImpactPoint = ClosestEnemyImpactPoint;
 		if (bFoundFriendly)
 		{
 			return EUnitDetectionState::EnemyDetectedWhileBehindFriendly;
@@ -265,7 +274,6 @@ EUnitDetectionState AUnit::DetectionStateBehaviour()
 
 		return EUnitDetectionState::EnemiesOnlyDetected;
 	}
-	
 	DetectedEnemyUnit = nullptr;
 
 	if (bFoundFriendly)

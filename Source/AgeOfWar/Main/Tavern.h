@@ -34,7 +34,6 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	
-	
 	FAttributeBase HealthAttribute;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta=(AllowPrivateAccess="true"))
@@ -50,6 +49,9 @@ protected:
 	TObjectPtr<UAttributesComponent> AttributeComponent;
 
 public:
+	
+	virtual EAffiliationToSelf GetAffiliationOfTarget_Implementation(int TeamIndex) override;
+	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 };

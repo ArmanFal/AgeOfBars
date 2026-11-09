@@ -189,10 +189,14 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	ALaneManager* GetLaneManager();
 	
-	FVector ClosestImpactPoint;
+	FVector ClosestEnemyImpactPoint;
+	FVector ClosestFriendlyImpactPoint;
 	
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	const FVector GetClosestEnemyImpactLocation() { return ClosestImpactPoint;} ;
+	FVector GetClosestEnemyImpactLocation() const { return ClosestEnemyImpactPoint;} ;
+	
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	FVector GetClosestFriendlyImpactPoint() const { return ClosestFriendlyImpactPoint;} ;
 	
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "LaneManager")
 	int GetUnitIndexOnOwningLane();

@@ -43,6 +43,15 @@ void ATavern::BeginPlay()
 	}
 }
 
+EAffiliationToSelf ATavern::GetAffiliationOfTarget_Implementation(int TeamIndex)
+{
+	if (TeamAffiliationIndex == TeamIndex)
+	{
+		return EAffiliationToSelf::Friendly;
+	}
+	return EAffiliationToSelf::Enemy;
+}
+
 // Called every frame
 void ATavern::Tick(float DeltaTime)
 {
