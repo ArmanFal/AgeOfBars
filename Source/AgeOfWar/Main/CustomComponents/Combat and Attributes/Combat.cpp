@@ -101,10 +101,10 @@ void UCombat::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponen
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
-EUnitAffiliation UCombat::GetDetectedUnitAffiliation(AUnit* CallerUnit, AUnit* OtherUnit)
+EAffiliationToSelf UCombat::GetDetectedUnitAffiliation(AUnit* CallerUnit, AUnit* OtherUnit)
 {
 	bool bIsAffiliated = CallerUnit->GetTeamAffiliationIndex() == OtherUnit->GetTeamAffiliationIndex();
-	return bIsAffiliated ? EUnitAffiliation::Friendly : EUnitAffiliation::Enemy;
+	return bIsAffiliated ? EAffiliationToSelf::Friendly : EAffiliationToSelf::Enemy;
 }
 
 bool UCombat::PerformAbilityHasConditions() const

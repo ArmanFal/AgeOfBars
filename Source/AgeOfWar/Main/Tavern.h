@@ -3,19 +3,23 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "CombatLifeBar.h"
+#include "UnitDetectableInterface.h"
 #include "Components/BoxComponent.h"
 #include "Components/WidgetComponent.h"
+#include "CustomComponents/Combat and Attributes/AttributesComponent.h"
 #include "CustomComponents/Parent/AttributeBase.h"
 #include "CustomComponents/Projectiles/ProjectileBase.h"
 #include "Data/ProjectileData.h"
 #include "GameFramework/Actor.h"
+#include "Managers/DamageableInterface.h"
 #include "Managers/ObjectPoolHandlerInterface.h"
 #include "Tavern.generated.h"
 
-class UCombatLifeBar;
-
 UCLASS()
-class AGEOFWAR_API ATavern : public AActor
+class AGEOFWAR_API ATavern : public AActor,
+	public IdamageableInterface,
+	public IUnitDetectableInterface
 {
 	GENERATED_BODY()
 
@@ -30,11 +34,20 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	
+	
 	FAttributeBase HealthAttribute;
 	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta=(AllowPrivateAccess="true"))
 	TObjectPtr<UCombatLifeBar> CombatLifeBar;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta=(AllowPrivateAccess="true"))
 	TObjectPtr<UWidgetComponent> WidgetComponent;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta=(AllowPrivateAccess="true"))
 	TObjectPtr<UBoxComponent> CollisionBoxComponent;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta=(AllowPrivateAccess="true"))
+	TObjectPtr<UAttributesComponent> AttributeComponent;
 
 public:
 	// Called every frame

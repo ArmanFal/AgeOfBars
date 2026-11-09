@@ -3,6 +3,8 @@
 
 #include "CombatLifeBar.h"
 #include "SNegativeActionButton.h"
+#include "Tavern.h"
+#include "UnitDetectableInterface.h"
 #include "Data/UUnitData.h"
 #include "Managers/ObjectPoolHandlerInterface.h"
 #include "SubSystems/SubsystemLibrary.h"
@@ -42,8 +44,6 @@ AUnit::AUnit()
 	{
 		AttributeComp->OnDeath.AddDynamic(this, &AUnit::HandleDeath);
 	}
-	
-	AttributesBar->SetWidgetClass(LifeBarWidget.GetClass());
 }
 
 // Called when the game starts or when spawned
@@ -52,8 +52,12 @@ void AUnit::BeginPlay()
 	Super::BeginPlay();
 	
 	LifeBarWidget = Cast<UCombatLifeBar>(AttributesBar->GetUserWidgetObject());
-	check(LifeBarWidget);
-	LifeBarWidget->SetLifePercentage(0.f);	
+	if (LifeBarWidget)
+	{
+		LifeBarWidget->SetLifePercentage(0.f);	
+	} 
+	else { UE_LOG(LogTemp, Warning, TEXT("%s Has invalid LifeBarWidgetClass."), *GetName()); }
+	
 	if (ensure(AttributeComp))
 	{
 		AttributeComp->OnAttributeChangedOnAttributeComp.AddDynamic(this, &AUnit::HandleAttributeChangeDelegate);
@@ -163,6 +167,7 @@ void AUnit::HandleMovementDelegate(float DeltaTime)
 	if (DetectFrontUnit(DeltaTime))
 	{
 		const EUnitDetectionState State = HandleUnitStateBasedOnDetectedUnits();
+		CombatComp->ChangeCombatState(State);
 		OnUnitStateChanged.Broadcast(State);
 	}
 	else
@@ -173,137 +178,102 @@ void AUnit::HandleMovementDelegate(float DeltaTime)
 
 EUnitDetectionState AUnit::HandleUnitStateBasedOnDetectedUnits()
 {
-	bool bFoundFriendly = false;
-	bool bFoundHigherIndexFriendly = false;
-	bool bHasFoundEnemy = false;
-	
-	float UnitDistance = TNumericLimits<float>::Max();;
-	AUnit* ClosestUnitCandidate = nullptr;
-	AUnit* ClosetEnemyUnitCandidate = nullptr;
-	
 	if (!GetLaneManager())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("%s Has No Valid Lane Manager."), *GetName());
-		return EUnitDetectionState::UnknownState;
+		return EUnitDetectionState::None;
 	}
 	if (GetLaneManager()->GetUnitIndex(this) == INDEX_NONE)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("%s Has No Valid UnitIndex Registered at LaneManager."), *GetName());
-		return EUnitDetectionState::UnknownState;
+		return EUnitDetectionState::None;
 	}
 	
-	const int ThisIndex = GetLaneManager()->GetUnitIndex(this);
-	
-	if (!GetLaneManager())
-	{
-		UE_LOG(LogTemp, Warning, TEXT("%s Has No Valid Lane Manager."), *GetName());
-		return EUnitDetectionState::UnknownState;
-	}
+	return DetectionStateBehaviour();
+}
 
-		for (int i = 0; i < FrontUnitHitResult.Num(); i ++)
+EUnitDetectionState AUnit::DetectionStateBehaviour()
+{
+	
+	if (FrontUnitHitResult.IsEmpty())
+	{
+		return EUnitDetectionState::NoBlockingUnitDetected;
+	}
+	
+	bool bFoundFriendly = false;
+	bool bFoundEnemy = false;
+	
+	float UnitDistance = TNumericLimits<float>::Max();;
+	
+	AActor* ClosestEnemyCandidate = nullptr;
+	FVector ClosestEnemyImpactPoint = FVector::ZeroVector;
+	
+	for (int i = 0; i < FrontUnitHitResult.Num(); i ++)
+	{
+		
+		FHitResult& Hits = FrontUnitHitResult[i];
+		AActor* Candidate = FrontUnitHitResult[i].GetActor();
+		
+		if (!IsValid(Candidate) || !Candidate->Implements<UUnitDetectableInterface>())
 		{
-			FHitResult& Hits = FrontUnitHitResult[i];
-			AUnit * Unit = Cast<AUnit>(Hits.GetActor());
+			continue;
+		}
+		
+		EAffiliationToSelf Affiliation = 
+			IUnitDetectableInterface::Execute_GetAffiliationOfTarget(Candidate, GetTeamAffiliationIndex());
+		
+		switch (Affiliation)
+		{
+		default: 
 			
-			if (!Unit)
+		case EAffiliationToSelf::UnknownAffiliation :
 			{
-				OtherDetectedUnitAffiliation = EUnitAffiliation::UnknownAffiliation;
 				continue;
 			}
 			
-			if (!Unit->GetLaneManager())
+		case EAffiliationToSelf::Enemy :
 			{
-				UE_LOG(LogTemp, Warning, TEXT("Detected Actor Has An Invalid Lane"));
-				return EUnitDetectionState::UnknownState;
-			}
-			
-			EUnitAffiliation UnitAffiliation = CombatComp->GetDetectedUnitAffiliation(this, Unit);
-			
-			float IterationDist = FVector::Dist(GetActorLocation(), Unit->GetActorLocation());
-			
-			if (IterationDist < UnitDistance)
-			{
-				UnitDistance = IterationDist;
-				ClosestUnitCandidate = Unit;
-			}
-			
-			const int OtherIndex = GetLaneManager()->GetUnitIndex(Unit);
-			
-			switch (UnitAffiliation)
-			{
-			default: UE_LOG(LogTemp, Warning, TEXT("Handling unit state returned default")); break;
-				
-			case EUnitAffiliation::Enemy :
+				const FVector TargetLocation = FrontUnitHitResult[i].ImpactPoint;
+				const float CheckingDistance = FVector::Dist(GetActorLocation(), TargetLocation);
+		
+				if (CheckingDistance < UnitDistance)
 				{
-					const int EnemyIndex = Unit->GetLaneManager()->GetUnitIndex(Unit);
-					bHasFoundEnemy = true;
-					if (ClosetEnemyUnitCandidate)
-					{
-						if (EnemyIndex > OtherIndex)
-						{
-							ClosetEnemyUnitCandidate = Unit;
-						}
-					}
-					else
-					{
-						ClosetEnemyUnitCandidate =  Unit;
-					}
-					break;
-				} 
-				
-			case EUnitAffiliation::UnknownAffiliation:
-					{
-						UE_LOG(LogTemp, Warning, TEXT("Unknown Affiliation"));
-					break;
-					}
-				
-			case EUnitAffiliation::Friendly:
-				{
-					if (ThisIndex < OtherIndex)
-					{
-							// We are behind the detected unit.
-							bFoundHigherIndexFriendly = true;
-					}
-
-						// We are ahead of the detected unit.
-						bFoundFriendly = true;
-						break;
+					ClosestEnemyImpactPoint = TargetLocation;
+					ClosestEnemyCandidate = Candidate;
+					UnitDistance = CheckingDistance;
 				}
-				
+				bFoundEnemy = true;
+				break;
 			}
-				
+		case EAffiliationToSelf::Friendly :
+			{
+				bFoundFriendly = true;
+				break;
+			}
+		case EAffiliationToSelf::Neutral : {}
 		}
-	
-	DetectedFrontUnit = ClosestUnitCandidate;
-	if (DetectedFrontUnit)
-	{
-		OtherDetectedUnitAffiliation = 
-			CombatComp->GetDetectedUnitAffiliation(this, DetectedFrontUnit);
 	}
 	
-	if (bFoundFriendly)
+	if (bFoundEnemy)
 	{
-		if (bFoundHigherIndexFriendly)
+		DetectedEnemyUnit = ClosestEnemyCandidate;
+		ClosestImpactPoint = ClosestEnemyImpactPoint;
+		if (bFoundFriendly)
 		{
-			if (bHasFoundEnemy)
-			{
-				DetectedEnemyUnit = ClosetEnemyUnitCandidate;
-				return EUnitDetectionState::EnemyDetectedWhileBehindFriendly;
-			}
-			return EUnitDetectionState::FriendlyOnlyDetected;
+			return EUnitDetectionState::EnemyDetectedWhileBehindFriendly;
 		}
-		return EUnitDetectionState::NoBlockingUnitDetected;
-	} 
-	if (bHasFoundEnemy)
-	{
-		DetectedEnemyUnit = ClosetEnemyUnitCandidate;
+
 		return EUnitDetectionState::EnemiesOnlyDetected;
 	}
+	
+	DetectedEnemyUnit = nullptr;
 
-	OtherDetectedUnitAffiliation =
-		EUnitAffiliation::UnknownAffiliation;
+	if (bFoundFriendly)
+	{
+		return EUnitDetectionState::FriendlyOnlyDetected;
+	}
 
-	return EUnitDetectionState::UnknownState;
+	return EUnitDetectionState::NoBlockingUnitDetected;
 }
 
 bool AUnit::DetectFrontUnit(float DeltaTime)
@@ -360,33 +330,6 @@ bool AUnit::DealDamage_Implementation(float Damage)
 	return FMath::Abs(FinalDamage) > 0.f;
 }
 
-const AUnit* AUnit::GetClosestUnitInLane()
-{
-	AUnit* thisClosestUnit = nullptr;
-	float Distance = TNumericLimits<float>::Max();
-	
-	for (int i = 0; i < FrontUnitHitResult.Num(); i++)
-	{
-		FVector ThisUnitLocation = GetActorLocation();
-		AUnit* UnitCandidate = Cast<AUnit>(FrontUnitHitResult[i].GetActor());
-		
-		if (!UnitCandidate)
-		{
-			continue;
-		}
-		
-		FVector UnitCandidateLocation = UnitCandidate->GetActorLocation();
-		
-		const float DistanceBetweenUnits = FVector::Dist(UnitCandidateLocation, ThisUnitLocation);
-		
-		if (DistanceBetweenUnits < Distance)
-		{
-			Distance = DistanceBetweenUnits;
-			thisClosestUnit = UnitCandidate;
-		}
-	}
-	return thisClosestUnit;
-}
 
 ALaneManager* AUnit::GetLaneManager()
 {
@@ -471,6 +414,15 @@ void AUnit::HideUnityAbility()
 		return;
 	}
 	AbilityWidget->SetHiddenInGame(true);
+}
+
+EAffiliationToSelf AUnit::GetAffiliationOfTarget_Implementation(int index)
+{
+	if (GetTeamAffiliationIndex() == index)
+	{
+		return EAffiliationToSelf::Friendly;
+	}
+	return EAffiliationToSelf::Enemy;
 }
 
 void AUnit::UnitSpawned_Implementation()

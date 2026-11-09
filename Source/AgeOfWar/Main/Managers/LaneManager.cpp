@@ -102,12 +102,12 @@ void ALaneManager::ModifyLanePowerNewUnitSpawnedWrapper(AUnit* NewUnit, const bo
 
 void ALaneManager::ModifyLanePower(AUnit* Source)
 {
-	if (!GetLanePowerCalculator())
-	{
-		UE_LOG(LogTemp, Warning, 
-			TEXT("For %s a LanePower Calculator was not created, AI will not behave as intended"), *GetName());
-	}
-	bool bIsFriendly = Source->GetTeamAffiliationIndex() == TeamAffiliation;
+	// if (!GetLanePowerCalculator())
+	// {
+	// 	UE_LOG(LogTemp, Warning, 
+	// 		TEXT("For %s a LanePower Calculator was not created, AI will not behave as intended"), *GetName());
+	// }
+	// bool bIsFriendly = Source->GetTeamAffiliationIndex() == TeamAffiliation;
 	// GetLanePowerCalculator()->ExecuteUnitWeightCalculation(Source, bIsFriendly);
 }
 

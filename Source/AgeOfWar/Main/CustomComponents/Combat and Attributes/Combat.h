@@ -23,11 +23,11 @@ enum class EUnitDetectionState : uint8
 	NoBlockingUnitDetected           UMETA(DisplayName = "No Blocking Unit Detected"),
 	FriendlyOnlyDetected             UMETA(DisplayName = "Friendly Only Detected"),
 	EnemyDetectedWhileBehindFriendly UMETA(DisplayName = "Enemy Detected While Behind Friendly"),
-	UnknownState					 UMETA(DisplayName = "UnknownState")
+	None					 UMETA(DisplayName = "None")
 };
 
 UENUM(BlueprintType)
-enum class EUnitAffiliation : uint8
+enum class EAffiliationToSelf : uint8
 {
 	Enemy UMETA(DisplayName = "Enemy"),
 	Friendly UMETA(DisplayName = "Friendly"),
@@ -57,7 +57,7 @@ public:
 	
 	bool AssignAttackBehaviour(TSubclassOf<UAbility> Attackbehaviour);
 	
-	UFUNCTION(BlueprintCallable, Category = "Components|Combat")
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Components|Combat")
 	EUnitDetectionState GetCurrentState() {return UnitState; } ;
 	
 	UFUNCTION(BlueprintCallable, Category = "Components|Combat")
@@ -67,7 +67,7 @@ public:
 	void ChangeCombatState (EUnitDetectionState State);
 	
 	UFUNCTION(BlueprintCallable, Category = "Components|Combat")
-	EUnitAffiliation GetDetectedUnitAffiliation(AUnit* CallerUnit, AUnit* OtherUnit);
+	EAffiliationToSelf GetDetectedUnitAffiliation(AUnit* CallerUnit, AUnit* OtherUnit);
 	
 	/*
 	 * This condition could be cursor indicators to let user specify a location
@@ -95,7 +95,7 @@ protected:
 	bool PerformUnitAction(UAbility* AbilityReference) const;
 	
 	UPROPERTY(BlueprintReadOnly, Category = "Components|Combat")
-	EUnitDetectionState UnitState{EUnitDetectionState::FriendlyOnlyDetected};
+	EUnitDetectionState UnitState{EUnitDetectionState::None};
 
 	UPROPERTY(BlueprintReadOnly, Category = "Components|Combat")
 	EUnitPerformingState PerformingState;

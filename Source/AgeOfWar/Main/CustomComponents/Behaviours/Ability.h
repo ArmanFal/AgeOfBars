@@ -45,7 +45,7 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 	TSubclassOf<UAbilityConditions> ASYNC_Condition;
 	
-	void TryActivateAbility(AUnit* Caller, AUnit* PotentialTarget);
+	void TryActivateAbility(AUnit* Caller, AActor* PotentialTarget);
 	
 	void StopAbility();
 	void Initialize();

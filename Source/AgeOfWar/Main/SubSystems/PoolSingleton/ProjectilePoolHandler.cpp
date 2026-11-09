@@ -107,15 +107,13 @@ bool UProjectilePoolHandler::RequestReturnToPool_Implementation(UObject* Request
 	
 	if (!SpawnedProjectiles.Contains(ReturnedProjectile))
 	{
-		UE_LOG(LogTemp, Error, TEXT("Attempted to return projectile %s, but it is not registered in SpawnedProjectiles, Executed by %s"),
+		if (!PooledProjectiles.Contains(ReturnedProjectile))
+		{
+			UE_LOG(LogTemp, Error, TEXT("Attempted to return projectile %s, but it is not registered in SpawnedProjectiles, Executed by %s"),
 			*GetNameSafe(ReturnedProjectile), *GetNameSafe(RequestingObject));
+		}
 		return false;
 	}
-	
-	UE_LOG(LogTemp, Warning,
-	TEXT("RETURN ACCEPTED: %s | Requested by: %s"),
-	*GetNameSafe(ReturnedProjectile),
-	*GetNameSafe(RequestingObject));
 	
 	SpawnedProjectiles.Remove(ReturnedProjectile);
 	PooledProjectiles.Add(ReturnedProjectile);

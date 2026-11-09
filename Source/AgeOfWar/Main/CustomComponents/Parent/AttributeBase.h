@@ -10,10 +10,10 @@ struct AGEOFWAR_API FAttributeBase
 {
 	GENERATED_BODY()
 	
-	UPROPERTY(BlueprintReadOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	float CurrentValue{0.f};
 	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	float BaseValue{0.f};
 };
 

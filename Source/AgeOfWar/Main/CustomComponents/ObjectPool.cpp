@@ -38,7 +38,7 @@ bool UObjectPool::AcquireFromPool(UObject* Instigator)
 	GetOwner()->SetActorEnableCollision(true);
 	GetOwner()->SetActorTickEnabled(true);
 	OnOwnerPooled.Broadcast(bIsInUse, Instigator);
-	return bIsInUse;
+	return true;
 }
 
 bool UObjectPool::ReleaseIntoPool(UObject* Instigator)
@@ -48,6 +48,6 @@ bool UObjectPool::ReleaseIntoPool(UObject* Instigator)
 	GetOwner()->SetActorEnableCollision(false);
 	GetOwner()->SetActorTickEnabled(false);
 	OnOwnerPooled.Broadcast(bIsInUse, Instigator);
-	return bIsInUse;
+	return false;
 }
 

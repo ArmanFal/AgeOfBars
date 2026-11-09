@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "UnitDetectableInterface.h"
 #include "CustomComponents//Combat and Attributes/Combat.h"
 #include "CustomComponents/MinimalMovement.h"
 #include "Data/UUnitData.h"
@@ -22,7 +23,9 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUnitStateChanged, EUnitDetectionS
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnUnitDied);
 
 UCLASS()
-class AGEOFWAR_API AUnit : public AActor, public IdamageableInterface
+class AGEOFWAR_API AUnit : public AActor,
+	public IdamageableInterface,
+	public IUnitDetectableInterface
 {
 	GENERATED_BODY()
 
@@ -39,6 +42,9 @@ public:
 	UFUNCTION(BlueprintNativeEvent)
 	void UnitSpawned();
 	
+	UFUNCTION(BlueprintCallable, Category = "Overrides")
+	void SetTeamAffiliationIndex(int Index) { TeamAffiliationIndex = Index;};
+	
 	// UFUNCTION(BlueprintImplementableEvent, Category = "Events")
 	// void NewDetectionState(EUnitDetectionState State);
 	
@@ -50,6 +56,7 @@ public:
 	
 	UObjectPool* GetObjectPool() { return ObjectPoolComp; };
 
+	UFUNCTION(BlueprintCallable, Category = "Overrides")
 	bool ApplyDataToUnit(const UUnitData* Data);
 	
 	void ApplyOverlayMaterial(UMaterialInterface* Material);
@@ -81,6 +88,8 @@ protected:
 	
 	void HandleMovementDelegate(float DeltaTime);
 	EUnitDetectionState HandleUnitStateBasedOnDetectedUnits();
+	
+	EUnitDetectionState DetectionStateBehaviour();
 	
 	UFUNCTION()
 	void HandlePoolStatus(bool IsInUse, UObject* PoolInstigator);
@@ -155,10 +164,10 @@ protected:
 	AUnit* DetectedFrontUnit{nullptr};
 	
 	UPROPERTY(BlueprintReadOnly)
-	AUnit* DetectedEnemyUnit{nullptr};
+	AActor* DetectedEnemyUnit{nullptr};
 	
 	UPROPERTY(BlueprintReadOnly)
-	EUnitAffiliation OtherDetectedUnitAffiliation{EUnitAffiliation::UnknownAffiliation};
+	EAffiliationToSelf OtherDetectedUnitAffiliation{EAffiliationToSelf::UnknownAffiliation};
 	
 	FCollisionQueryParams CollisionQueryParams 
 	{
@@ -171,20 +180,25 @@ public:
 
 	virtual bool DealDamage_Implementation(float Damage) override;
 	
+	
+	virtual EAffiliationToSelf GetAffiliationOfTarget_Implementation(int index) override;
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta=(AllowPrivateAccess="true"))
 	FGameplayTag UnitTag;
 	
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	ALaneManager* GetLaneManager();
 	
+	FVector ClosestImpactPoint;
+	
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	const AUnit* GetClosestUnitInLane();
+	const FVector GetClosestEnemyImpactLocation() { return ClosestImpactPoint;} ;
 	
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "LaneManager")
 	int GetUnitIndexOnOwningLane();
 	
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Combat")
-	AUnit* GetDetectedEnemyUnit() {return DetectedEnemyUnit; };
+	AActor* GetDetectedEnemyUnit() {return DetectedEnemyUnit; };
 	
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Components|Combat")
 	int GetTeamAffiliationIndex() {return TeamAffiliationIndex;};

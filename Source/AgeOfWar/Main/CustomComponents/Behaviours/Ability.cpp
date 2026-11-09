@@ -49,7 +49,7 @@ bool UAbility::EvaluateConditions()
 	return false;
 }
 
-void UAbility::TryActivateAbility(AUnit* Caller, AUnit* PotentialTarget) 
+void UAbility::TryActivateAbility(AUnit* Caller, AActor* PotentialTarget) 
 {
 	AbilityOwner = Caller;
 	if (PreConditionStatus == EAbilityPreConditions::IsNotAssigned)
