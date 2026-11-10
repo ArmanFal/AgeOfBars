@@ -2,7 +2,6 @@
 #include "Unit.h"
 
 #include "CombatLifeBar.h"
-#include "SNegativeActionButton.h"
 #include "Tavern.h"
 #include "UnitDetectableInterface.h"
 #include "Data/UUnitData.h"
@@ -23,13 +22,11 @@ AUnit::AUnit()
 	CharacterMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("CharacterMesh"));
 	AbilityWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("AbilityIndicatorWidget"));
 	AttributesBar = CreateDefaultSubobject<UWidgetComponent>(TEXT("AttributeBar"));
-	InteractionWidget = CreateDefaultSubobject<UWidgetInteractionComponent>(TEXT("InteractionWidget"));
 	
 	RootComponent = BoxCollision;
 	CharacterMesh->SetupAttachment(RootComponent);
 	AbilityWidget->SetupAttachment(RootComponent);
 	AttributesBar->SetupAttachment(RootComponent);
-	InteractionWidget->SetupAttachment(RootComponent);
 	
 	if (AbilityWidget)
 	{
@@ -138,6 +135,7 @@ bool AUnit::ApplyDataToUnit(const UUnitData* Data)
 	CombatComp->AssignUnitAbility(Data->Ability);
 	CombatComp->AssignAttackBehaviour(Data->Attackbehaviour);
 	UpdateUnitTag(Data->UnitTag);
+	AttackMontage = Data->AttackMontage;
 	UnitSpawned();
 	return true;
 }

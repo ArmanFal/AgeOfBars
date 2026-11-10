@@ -74,7 +74,7 @@ void UMinimalMovement::MoveUnit(FVector Direction, float deltaTime)
 	
 	Velocity = Velocity.GetClampedToMaxSize(MaxSpeed);
 	
-	OwnerActor->AddActorWorldOffset(Velocity * deltaTime, true);
+	OwnerActor->AddActorWorldOffset(Velocity * deltaTime, false);
 	
 	OnTickMovementDelegate.ExecuteIfBound(); 
 }

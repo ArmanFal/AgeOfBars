@@ -37,12 +37,13 @@ class AGEOFWAR_API UProjectilePoolHandler : public UWorldSubsystem, public IObje
 	
 #if WITH_EDITOR
 	TArray<TObjectPtr<AProjectileBase>> AllDebugProjectiles;
-#endif
+
 	
 	// Editor or Utility only 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	TArray<AProjectileBase*> GetAllProjectiles() const {return AllDebugProjectiles;};
 	
+#endif
 protected:
 	
 	int ProjectilePoolSize{200};

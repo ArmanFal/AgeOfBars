@@ -2,6 +2,7 @@
 
 #pragma once
 
+#if WITH_EDITORONLY_DATA
 #include "CoreMinimal.h"
 #include "Editor/Blutility/Classes/EditorUtilityWidget.h"
 
@@ -27,3 +28,4 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ApplyIcon(FName TabID);
 };
+#endif

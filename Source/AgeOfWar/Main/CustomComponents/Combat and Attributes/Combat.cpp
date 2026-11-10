@@ -2,8 +2,6 @@
 
 
 #include "Combat.h"
-
-#include "SNegativeActionButton.h"
 #include "Main/Unit.h"
 #include "Main/CustomComponents/Behaviours/Ability.h"
 

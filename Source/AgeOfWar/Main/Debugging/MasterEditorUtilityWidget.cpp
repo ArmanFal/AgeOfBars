@@ -1,6 +1,6 @@
 ﻿// Copyright (c) 2026 Arman Shajiee. All rights reserved.
 
-
+#if WITH_EDITORONLY_DATA
 #include "MasterEditorUtilityWidget.h"
 
 #include "LevelEditor.h"
@@ -43,3 +43,4 @@ void UMasterEditorUtilityWidget::ApplyIcon(FName TabID)
 		Tab->SetTabIcon(Icon);
 	}
 }
+#endif

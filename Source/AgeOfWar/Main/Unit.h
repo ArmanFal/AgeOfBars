@@ -134,9 +134,6 @@ protected:
 	TObjectPtr<UWidgetComponent> AbilityWidget;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta=(AllowPrivateAccess="true"))
-	TObjectPtr<UWidgetInteractionComponent> InteractionWidget;
-	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta=(AllowPrivateAccess="true"))
 	TObjectPtr<USceneComponent> Root;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta=(AllowPrivateAccess="true"))
@@ -185,6 +182,9 @@ public:
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta=(AllowPrivateAccess="true"))
 	FGameplayTag UnitTag;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AnimationMontage")
+	UAnimMontage* AttackMontage;
 	
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	ALaneManager* GetLaneManager();

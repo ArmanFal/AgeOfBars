@@ -10,7 +10,6 @@ public class AgeOfWar : ModuleRules
 
 		PublicDependencyModuleNames.AddRange(new string[] {
 			"Core",
-			"Blutility",
 			"CoreUObject",
 			"Engine",
 			"InputCore",
@@ -25,7 +24,10 @@ public class AgeOfWar : ModuleRules
 			"Niagara"
 		});
 
-		PrivateDependencyModuleNames.AddRange(new string[] { });
+		if (Target.Type == TargetType.Editor)
+		{
+			PrivateDependencyModuleNames.Add("Blutility");
+		}
 
 		PublicIncludePaths.AddRange(new string[] {
 			"AgeOfWar",
