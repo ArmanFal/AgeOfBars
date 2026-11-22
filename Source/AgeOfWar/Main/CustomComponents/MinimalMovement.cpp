@@ -70,8 +70,8 @@ bool UMinimalMovement::EnsureOwnerExists() const
 void UMinimalMovement::MoveUnit(FVector Direction, float deltaTime)
 {
 	// Basic movement for one direction based on acceleration
-	Velocity += Direction.GetSafeNormal() * Acceleration * deltaTime;
-	
+	// Velocity = Direction.GetSafeNormal() * Acceleration * deltaTime;
+	Velocity = Direction.GetSafeNormal() * MaxSpeed;
 	Velocity = Velocity.GetClampedToMaxSize(MaxSpeed);
 	
 	OwnerActor->AddActorWorldOffset(Velocity * deltaTime, false);
