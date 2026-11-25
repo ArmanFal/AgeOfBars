@@ -192,7 +192,7 @@ EUnitDetectionState AUnit::HandleUnitStateBasedOnDetectedUnits()
 
 EUnitDetectionState AUnit::DetectionStateBehaviour()
 {
-	
+
 	ClosestEnemyImpactPoint = FVector::ZeroVector;
 	ClosestFriendlyImpactPoint = FVector::ZeroVector;
 	
@@ -222,8 +222,9 @@ EUnitDetectionState AUnit::DetectionStateBehaviour()
 			continue;
 		}
 		
-		EAffiliationToSelf Affiliation = 
+		const EAffiliationToSelf Affiliation = 
 			IUnitDetectableInterface::Execute_GetAffiliationOfTarget(Candidate, GetTeamAffiliationIndex());
+		
 		const FVector TargetLocation = FrontUnitHitResult[i].ImpactPoint;
 		const float CheckingDistance = FVector::Dist(GetActorLocation(), TargetLocation);
 		
@@ -279,7 +280,7 @@ EUnitDetectionState AUnit::DetectionStateBehaviour()
 		return EUnitDetectionState::FriendlyOnlyDetected;
 	}
 
-	return EUnitDetectionState::NoBlockingUnitDetected;
+	return EUnitDetectionState::None;
 }
 
 bool AUnit::DetectFrontUnit(float DeltaTime)
@@ -295,7 +296,6 @@ bool AUnit::DetectFrontUnit(float DeltaTime)
 	ECC_Visibility,
 	CollisionQueryParams
 );
-	// We have Detected any Unit in front of us
 	bool bHit = !FrontUnitHitResult.IsEmpty();
 	
 	DrawDebugLine(GetWorld(), BeginPoint, EndPoint, bHit ? FColor::Red : FColor::Green,
